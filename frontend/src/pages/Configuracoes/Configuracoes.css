@@ -1,0 +1,67 @@
+.gp-config-card {
+  padding: 22px 24px;
+  margin-top: 18px;
+}
+
+.gp-config-card-head h3 {
+  font-size: 1.02rem;
+}
+.gp-config-card-head p {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.gp-config-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.gp-config-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--gp-radius-sm);
+  border: 1.5px solid var(--border-subtle);
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  min-width: 130px;
+}
+.gp-config-option:hover {
+  border-color: var(--accent);
+}
+.gp-config-option.is-active {
+  border-color: var(--accent);
+  background: var(--gp-empresa-green-bg);
+  color: var(--accent-strong);
+}
+.gp-config-option-icon {
+  display: flex;
+}
+.gp-config-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--accent-strong);
+}
+
+.gp-config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+  max-width: 420px;
+}
+
+@media (max-width: 520px) {
+  .gp-config-grid {
+    grid-template-columns: 1fr;
+  }
+}

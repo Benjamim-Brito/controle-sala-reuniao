@@ -1,0 +1,99 @@
+.gp-page {
+  padding-top: 4px;
+}
+
+.gp-section {
+  margin-top: 28px;
+}
+
+.gp-section-title {
+  font-size: 1.02rem;
+  margin-bottom: 14px;
+}
+
+.gp-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.gp-rescard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gp-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gp-skeleton-card {
+  height: 66px;
+  border-radius: var(--gp-radius-md);
+  background: linear-gradient(
+    100deg,
+    var(--bg-surface-alt) 30%,
+    var(--bg-surface) 50%,
+    var(--bg-surface-alt) 70%
+  );
+  background-size: 200% 100%;
+  animation: gp-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes gp-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.gp-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: currentColor;
+  animation: gp-spin 700ms linear infinite;
+  display: inline-block;
+}
+
+@keyframes gp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* filtros comuns (Reservas / Histórico) */
+.gp-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.gp-filters select,
+.gp-filters input {
+  min-width: 150px;
+}
+.gp-filters-search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+.gp-filters-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+.gp-filters-search input {
+  width: 100%;
+  padding-left: 36px;
+}

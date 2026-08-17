@@ -1,0 +1,30 @@
+.gp-shell {
+  min-height: 100vh;
+}
+
+.gp-main {
+  margin-left: var(--gp-sidebar-w);
+  min-height: 100vh;
+  transition: margin-left var(--gp-transition);
+  overflow-x: hidden;
+}
+
+.gp-shell-collapsed .gp-main {
+  margin-left: var(--gp-sidebar-w-collapsed);
+}
+
+.gp-main-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px 48px;
+}
+
+@media (max-width: 860px) {
+  .gp-main,
+  .gp-shell-collapsed .gp-main {
+    margin-left: 0;
+  }
+  .gp-main-inner {
+    padding: 0 18px 40px;
+  }
+}

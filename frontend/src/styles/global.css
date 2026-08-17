@@ -1,0 +1,181 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import "./tokens.css";
+@import "./pages.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--gp-font-body);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--gp-transition), color var(--gp-transition);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--gp-font-display);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--gp-radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color var(--gp-transition), box-shadow var(--gp-transition);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  border-color: var(--accent);
+  box-shadow: var(--gp-shadow-focus);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--gp-shadow-focus);
+}
+
+::selection {
+  background: var(--gp-green);
+  color: #16321f;
+}
+
+/* utilitário: respeita usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.gp-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.gp-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.gp-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--gp-radius-pill);
+}
+
+.gp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--gp-radius-sm);
+  padding: 11px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--gp-transition), background var(--gp-transition),
+    box-shadow var(--gp-transition), opacity var(--gp-transition);
+  white-space: nowrap;
+}
+.gp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.gp-btn-primary {
+  background: linear-gradient(135deg, var(--gp-green), var(--gp-green-secondary));
+  color: #16321f;
+  box-shadow: var(--gp-shadow-sm);
+}
+.gp-btn-primary:hover:not(:disabled) {
+  box-shadow: var(--gp-shadow-md);
+}
+.gp-btn-secondary {
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-subtle);
+}
+.gp-btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.gp-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.gp-btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.gp-btn-danger {
+  background: var(--gp-status-conflito-bg);
+  color: var(--gp-status-conflito);
+}
+.gp-btn-danger:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+.gp-btn-sm {
+  padding: 7px 12px;
+  font-size: 0.82rem;
+}
+
+.gp-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--gp-radius-md);
+  box-shadow: var(--gp-shadow-sm);
+}
+
+.gp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

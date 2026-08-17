@@ -1,0 +1,21 @@
+import "./EmptyState.css";
+
+export default function EmptyState({ icon: Icon, title, description, action }) {
+  return (
+    <div className="gp-empty">
+      <div className="gp-empty-pattern" aria-hidden="true">
+        <span>green</span>
+        <span>green</span>
+        <span>green</span>
+      </div>
+      {Icon && (
+        <div className="gp-empty-icon">
+          <Icon size={26} strokeWidth={1.6} />
+        </div>
+      )}
+      <h3 className="gp-empty-title">{title}</h3>
+      {description && <p className="gp-empty-desc">{description}</p>}
+      {action && <div className="gp-empty-action">{action}</div>}
+    </div>
+  );
+}

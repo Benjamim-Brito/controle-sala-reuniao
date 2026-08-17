@@ -1,0 +1,57 @@
+.gp-empty {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 52px 24px;
+  border-radius: var(--gp-radius-md);
+  background: var(--bg-surface-alt);
+  border: 1px dashed var(--border-strong);
+}
+
+.gp-empty-pattern {
+  position: absolute;
+  top: 0;
+  right: -10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--gp-font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--accent);
+  opacity: 0.06;
+  text-transform: lowercase;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.gp-empty-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--gp-radius-signature);
+  background: var(--gp-empresa-green-bg);
+  color: var(--accent-strong);
+  margin-bottom: 6px;
+}
+
+.gp-empty-title {
+  font-size: 1.02rem;
+  color: var(--text-primary);
+}
+
+.gp-empty-desc {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  max-width: 320px;
+}
+
+.gp-empty-action {
+  margin-top: 14px;
+}

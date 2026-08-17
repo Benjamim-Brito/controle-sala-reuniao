@@ -1,0 +1,98 @@
+/*
+  Green Paperless — Design Tokens
+  Baseado no manual de rebranding: verde principal #3EE98D, verde secundário
+  #39D87D, grafite #3A3A3A e fundo esverdeado claro #F3FFF6.
+*/
+
+:root {
+  /* ---- Marca ---- */
+  --gp-green: #3ee98d;
+  --gp-green-secondary: #39d87d;
+  --gp-green-deep: #1f9b5c;
+  --gp-graphite: #3a3a3a;
+  --gp-bg-tint: #f3fff6;
+
+  /* ---- Empresa (cores de identificação) ---- */
+  --gp-empresa-green: var(--gp-green);
+  --gp-empresa-green-bg: rgba(62, 233, 141, 0.14);
+  --gp-empresa-mv: #8b7cf6;
+  --gp-empresa-mv-bg: rgba(139, 124, 246, 0.14);
+  --gp-empresa-externo: #64748b;
+  --gp-empresa-externo-bg: rgba(100, 116, 139, 0.12);
+
+  /* ---- Status ---- */
+  --gp-status-agendada: #1f9b5c;
+  --gp-status-agendada-bg: rgba(62, 233, 141, 0.16);
+  --gp-status-standby: #b9770e;
+  --gp-status-standby-bg: rgba(245, 166, 35, 0.16);
+  --gp-status-conflito: #d64545;
+  --gp-status-conflito-bg: rgba(214, 69, 69, 0.14);
+  --gp-status-cancelada: #8a8f8c;
+  --gp-status-cancelada-bg: rgba(138, 143, 140, 0.14);
+
+  /* ---- Tipografia ---- */
+  --gp-font-display: "Manrope", "Plus Jakarta Sans", system-ui, sans-serif;
+  --gp-font-body: "Plus Jakarta Sans", "Manrope", system-ui, sans-serif;
+
+  /* ---- Raio / geometria (blocos arredondados do branding) ---- */
+  --gp-radius-sm: 10px;
+  --gp-radius-md: 16px;
+  --gp-radius-lg: 22px;
+  --gp-radius-pill: 999px;
+  /* raio assimétrico usado nos grafismos do manual (canto "cortado") */
+  --gp-radius-signature: 28px 28px 28px 6px;
+
+  /* ---- Sombra ---- */
+  --gp-shadow-sm: 0 1px 2px rgba(58, 58, 58, 0.06);
+  --gp-shadow-md: 0 8px 24px rgba(58, 58, 58, 0.08);
+  --gp-shadow-focus: 0 0 0 3px rgba(62, 233, 141, 0.35);
+
+  /* ---- Layout ---- */
+  --gp-sidebar-w: 248px;
+  --gp-sidebar-w-collapsed: 84px;
+  --gp-header-h: 68px;
+  --gp-transition: 160ms ease;
+}
+
+/* ============ TEMA CLARO (padrão) ============ */
+:root,
+[data-theme="light"] {
+  --bg-app: var(--gp-bg-tint);
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #eafcf1;
+  --bg-sidebar: #ffffff;
+  --bg-hover: rgba(62, 233, 141, 0.1);
+  --border-subtle: rgba(58, 58, 58, 0.1);
+  --border-strong: rgba(58, 58, 58, 0.18);
+
+  --text-primary: var(--gp-graphite);
+  --text-secondary: #6b6f6d;
+  --text-muted: #9aa19d;
+  --text-on-accent: #16321f;
+  --text-inverse: #ffffff;
+
+  --accent: var(--gp-green);
+  --accent-secondary: var(--gp-green-secondary);
+  --accent-strong: var(--gp-green-deep);
+}
+
+/* ============ TEMA ESCURO ============ */
+[data-theme="dark"] {
+  --bg-app: #16181a;
+  --bg-surface: #202322;
+  --bg-surface-alt: #262a27;
+  --bg-sidebar: var(--gp-graphite);
+  --bg-hover: rgba(62, 233, 141, 0.14);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #eefff5;
+  --text-secondary: #b9c4bd;
+  --text-muted: #808a85;
+  --text-on-accent: #0e2416;
+  --text-inverse: #16181a;
+
+  --accent: var(--gp-green);
+  --accent-secondary: var(--gp-green-secondary);
+  --accent-strong: #6df0a8;
+}

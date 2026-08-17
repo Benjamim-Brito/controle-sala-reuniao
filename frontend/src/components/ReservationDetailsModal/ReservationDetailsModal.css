@@ -1,0 +1,41 @@
+.gp-details-header h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  padding-right: 30px;
+}
+.gp-details-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.gp-details-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--gp-radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+.gp-details-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+.gp-details-row svg {
+  color: var(--accent-strong);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.gp-details-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.gp-details-actions .gp-btn {
+  flex: 1;
+}

@@ -1,0 +1,25 @@
+.gp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  border-radius: var(--gp-radius-pill);
+  white-space: nowrap;
+}
+
+.gp-badge-md {
+  font-size: 0.76rem;
+  padding: 5px 10px 5px 8px;
+}
+
+.gp-badge-sm {
+  font-size: 0.68rem;
+  padding: 3px 8px 3px 7px;
+}
+
+.gp-badge-swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}

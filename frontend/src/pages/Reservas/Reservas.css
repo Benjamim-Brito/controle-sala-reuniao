@@ -1,0 +1,103 @@
+.gp-table-wrap {
+  overflow-x: auto;
+}
+.gp-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+.gp-table thead th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.gp-table tbody td {
+  padding: 13px 16px;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+.gp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.gp-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+.gp-table-motivo {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.gp-icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.gp-icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.gp-icon-btn-danger:hover {
+  border-color: var(--gp-status-conflito);
+  color: var(--gp-status-conflito);
+}
+
+.gp-reservas-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.gp-reservas-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gp-reservas-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--gp-radius-md);
+  padding: 14px;
+}
+.gp-reservas-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.gp-reservas-card-date {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.gp-reservas-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.gp-reservas-card-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.gp-reservas-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
