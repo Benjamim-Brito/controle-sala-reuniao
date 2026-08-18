@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { History as HistoryIcon } from "lucide-react";
 import Header from "../../components/Header/Header";
 import { StatusBadge, EmpresaBadge } from "../../components/StatusBadge/StatusBadge";
@@ -6,30 +6,51 @@ import EmptyState from "../../components/EmptyState/EmptyState";
 import ReservationDetailsModal from "../../components/ReservationDetailsModal/ReservationDetailsModal";
 import { useReservas } from "../../hooks/useReservas";
 import { useIsMobile } from "../../hooks/useMediaQuery";
-import { formatDateBR, formatTime } from "../../utils/date";
+import { formatDateBR, formatTime, isReservationPast } from "../../utils/date";
 import { STATUS } from "../../utils/status";
 import "../Reservas/Reservas.css";
 
 export default function Historico({ onOpenMobileMenu }) {
-  const [filters, setFilters] = useState({ data: "", tipo: "" }); // tipo: "" | CANCELADA | CONFLITO
+  const [filters, setFilters] = useState({ data: "", tipo: "" }); // tipo: "" | PASSADAS | CANCELADA | CONFLITO
   const [detailsReserva, setDetailsReserva] = useState(null);
+  const [now, setNow] = useState(() => new Date());
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const { reservas, loading } = useReservas({ data: filters.data || undefined });
 
   const historico = useMemo(() => {
-    const base = reservas.filter(
-      (r) => r.status === STATUS.CANCELADA || r.status === STATUS.CONFLITO
-    );
+    const base = reservas
+      .filter(
+        (r) =>
+          isReservationPast(r.data, r.hora_fim, now) ||
+          r.status === STATUS.CANCELADA ||
+          r.status === STATUS.CONFLITO
+      )
+      .sort((a, b) => {
+        const porData = b.data.localeCompare(a.data);
+        if (porData !== 0) return porData;
+        return b.hora_inicio.localeCompare(a.hora_inicio);
+      });
+
     if (!filters.tipo) return base;
+
+    if (filters.tipo === "PASSADAS") {
+      return base.filter((r) => isReservationPast(r.data, r.hora_fim, now));
+    }
+
     return base.filter((r) => r.status === filters.tipo);
-  }, [reservas, filters.tipo]);
+  }, [reservas, filters.tipo, now]);
 
   return (
     <div className="gp-page">
       <Header
         title="Histórico"
-        subtitle="Reservas canceladas ou em conflito"
+        subtitle="Reservas passadas, canceladas ou em conflito"
         onOpenMobileMenu={onOpenMobileMenu}
       />
 
@@ -43,7 +64,8 @@ export default function Historico({ onOpenMobileMenu }) {
           value={filters.tipo}
           onChange={(e) => setFilters((f) => ({ ...f, tipo: e.target.value }))}
         >
-          <option value="">Canceladas e conflitos</option>
+          <option value="">Todo o histórico</option>
+          <option value="PASSADAS">Somente passadas</option>
           <option value="CANCELADA">Somente canceladas</option>
           <option value="CONFLITO">Somente conflitos</option>
         </select>
@@ -59,7 +81,7 @@ export default function Historico({ onOpenMobileMenu }) {
         <EmptyState
           icon={HistoryIcon}
           title="Nada por aqui ainda"
-          description="Reservas canceladas ou com conflito aparecerão neste histórico."
+          description="Reservas encerradas, canceladas ou com conflito aparecerão neste histórico."
         />
       ) : isMobile ? (
         <div className="gp-reservas-cards">

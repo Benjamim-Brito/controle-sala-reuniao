@@ -13,7 +13,10 @@ router.post("/prioridade", reservasController.aplicarPrioridade);
 
 router.put("/:id", reservasController.editarReserva);
 
-router.patch("/:id/cancelar", reservasController.cancelarReserva);
+router.patch("/:id/standby", reservasController.pausarReserva);
 
+router.patch("/:id/retomar", reservasController.retomarReserva);
+
+router.patch("/:id/cancelar", reservasController.cancelarReserva);
 
 module.exports = router;

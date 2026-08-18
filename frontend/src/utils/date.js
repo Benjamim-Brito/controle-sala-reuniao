@@ -105,3 +105,17 @@ export function isSameISODate(a, b) {
 export function isTodayISO(isoDate) {
   return isoDate === todayISO();
 }
+
+/** Retorna true quando o horário final da reserva já passou no horário local do navegador. */
+export function isReservationPast(data, horaFim, now = new Date()) {
+  if (!data || !horaFim) return false;
+
+  const hoje = toISODate(now);
+
+  if (data < hoje) return true;
+  if (data > hoje) return false;
+
+  const agoraEmMinutos = now.getHours() * 60 + now.getMinutes();
+  return timeToMinutes(horaFim) <= agoraEmMinutos;
+}
+

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Eye, Pencil, Ban, ListChecks } from "lucide-react";
 import Header from "../../components/Header/Header";
 import { StatusBadge, EmpresaBadge } from "../../components/StatusBadge/StatusBadge";
@@ -10,7 +10,7 @@ import ReservationDetailsModal from "../../components/ReservationDetailsModal/Re
 import { useReservas } from "../../hooks/useReservas";
 import { useReservationFlow } from "../../hooks/useReservationFlow";
 import { useIsMobile } from "../../hooks/useMediaQuery";
-import { formatDateBR, formatTime } from "../../utils/date";
+import { formatDateBR, formatTime, isReservationPast } from "../../utils/date";
 import { STATUS } from "../../utils/status";
 import "./Reservas.css";
 
@@ -18,7 +18,13 @@ export default function Reservas({ onOpenMobileMenu }) {
   const [filters, setFilters] = useState({ data: "", empresa: "", status: "" });
   const [search, setSearch] = useState("");
   const [detailsReserva, setDetailsReserva] = useState(null);
+  const [now, setNow] = useState(() => new Date());
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const apiFilters = useMemo(
     () => ({
@@ -34,12 +40,21 @@ export default function Reservas({ onOpenMobileMenu }) {
 
   const filtradas = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return reservas;
-    return reservas.filter(
+
+    const ativas = reservas.filter(
       (r) =>
-        r.responsavel?.toLowerCase().includes(term) || r.setor?.toLowerCase().includes(term)
+        (r.status === STATUS.AGENDADA || r.status === STATUS.STAND_BY) &&
+        !isReservationPast(r.data, r.hora_fim, now)
     );
-  }, [reservas, search]);
+
+    if (!term) return ativas;
+
+    return ativas.filter(
+      (r) =>
+        r.responsavel?.toLowerCase().includes(term) ||
+        r.setor?.toLowerCase().includes(term)
+    );
+  }, [reservas, search, now]);
 
   function handleEdit(reserva) {
     setDetailsReserva(null);
@@ -50,9 +65,25 @@ export default function Reservas({ onOpenMobileMenu }) {
     flow.openCancelConfirm(reserva);
   }
 
+  async function handlePause(reserva) {
+      const sucesso = await flow.pauseReservation(reserva);
+
+      if (sucesso) {
+          setDetailsReserva(null);
+      }
+  }
+
+  async function handleResume(reserva) {
+      const sucesso = await flow.resumeReservation(reserva);
+
+      if (sucesso) {
+          setDetailsReserva(null);
+      }
+  }
+
   return (
     <div className="gp-page">
-      <Header title="Reservas" subtitle="Todas as reservas da sala" onOpenMobileMenu={onOpenMobileMenu}>
+      <Header title="Reservas" subtitle="Reservas ativas da sala" onOpenMobileMenu={onOpenMobileMenu}>
         <button className="gp-btn gp-btn-primary" onClick={() => flow.openCreate()}>
           <Plus size={16} /> Nova reserva
         </button>
@@ -86,11 +117,9 @@ export default function Reservas({ onOpenMobileMenu }) {
           value={filters.status}
           onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
         >
-          <option value="">Todos os status</option>
+          <option value="">Todos os status ativos</option>
           <option value="AGENDADA">Agendada</option>
           <option value="STAND_BY">Stand by</option>
-          <option value="CONFLITO">Conflito</option>
-          <option value="CANCELADA">Cancelada</option>
         </select>
       </div>
 
@@ -104,7 +133,7 @@ export default function Reservas({ onOpenMobileMenu }) {
         <EmptyState
           icon={ListChecks}
           title="Nenhuma reserva encontrada"
-          description="Ajuste os filtros ou crie uma nova reserva para a sala."
+          description="Não há reservas ativas com esses filtros. Ajuste a busca ou crie uma nova reserva."
           action={
             <button className="gp-btn gp-btn-primary gp-btn-sm" onClick={() => flow.openCreate()}>
               <Plus size={14} /> Criar reserva
@@ -209,12 +238,15 @@ export default function Reservas({ onOpenMobileMenu }) {
         </div>
       )}
 
-      <ReservationDetailsModal
-        reserva={detailsReserva}
-        onClose={() => setDetailsReserva(null)}
-        onEdit={handleEdit}
-        onCancel={handleCancel}
-      />
+        <ReservationDetailsModal
+            reserva={detailsReserva}
+            onClose={() => setDetailsReserva(null)}
+            onEdit={handleEdit}
+            onCancel={handleCancel}
+            onPause={handlePause}
+            onResume={handleResume}
+            changingStatus={flow.changingStatus}
+        />
 
       <ReservationModal
         open={flow.formState.open}

@@ -1,115 +1,301 @@
+/* =====================================================
+   DASHBOARD — STATUS DA SALA
+===================================================== */
+
 .gp-status-hero {
-  position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px 26px;
+  gap: 18px;
+  min-height: 98px;
+  margin-top: 22px;
+  padding: 20px 26px;
   border-radius: var(--gp-radius-lg);
-  margin-top: 18px;
-  color: var(--text-inverse);
+  color: #16321f;
+  overflow: hidden;
 }
 
 .gp-status-hero.is-free {
-  background: linear-gradient(135deg, var(--gp-green) 0%, var(--gp-green-secondary) 100%);
+  background: linear-gradient(100deg, var(--gp-green), #55d98f);
 }
 
 .gp-status-hero.is-busy {
-  background: var(--gp-graphite);
-}
-
-.gp-status-hero::after {
-  content: "";
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 140px;
-  height: 140px;
-  border-radius: var(--gp-radius-signature);
-  background: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(100deg, #ffd36a, #f5b84b);
 }
 
 .gp-status-hero-icon {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--gp-radius-signature);
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.2);
-  position: relative;
-  z-index: 1;
 }
 
 .gp-status-hero-text {
-  position: relative;
-  z-index: 1;
   min-width: 0;
 }
 
 .gp-status-hero-text h2 {
-  font-size: 1.28rem;
+  font-size: 1.24rem;
+  line-height: 1.2;
+  margin-bottom: 5px;
 }
 
-.gp-status-hero-desc {
-  margin-top: 4px;
+.gp-status-hero-desc,
+.gp-status-hero-meta {
   font-size: 0.88rem;
-  opacity: 0.9;
+  color: rgba(22, 50, 31, 0.9);
 }
 
 .gp-status-hero-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
-  font-size: 0.86rem;
-  opacity: 0.92;
 }
+
+/* =====================================================
+   DASHBOARD — RESUMO
+===================================================== */
 
 .gp-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 18px;
 }
 
 .gp-summary-card {
+  min-width: 0;
+  min-height: 76px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--bg-surface);
+  gap: 13px;
+  padding: 15px 18px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--gp-radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--gp-shadow-sm);
+  text-align: left;
+}
+
+.gp-summary-card > svg {
+  flex: 0 0 auto;
   color: var(--accent-strong);
 }
 
-.gp-summary-card div {
+.gp-summary-card > div {
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .gp-summary-card strong {
   font-family: var(--gp-font-display);
-  font-size: 1.15rem;
-  color: var(--text-primary);
+  font-size: 1.05rem;
+  line-height: 1.1;
 }
 
 .gp-summary-card span {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Todos os cards mantêm a aparência original, mas passam a ser interativos */
+.gp-summary-card-clickable {
+  width: 100%;
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--gp-transition),
+    background var(--gp-transition),
+    box-shadow var(--gp-transition);
+}
+
+.gp-summary-card-clickable:hover,
+.gp-summary-card-clickable.is-open {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.gp-summary-card-clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gp-summary-card-arrow {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted) !important;
+}
+
+.gp-summary-card-standby:hover,
+.gp-summary-card-standby.is-open {
+  border-color: rgba(185, 119, 14, 0.48);
+  background: var(--gp-status-standby-bg);
+}
+
+.gp-summary-card-standby > svg {
+  color: var(--gp-status-standby);
+}
+
+/* =====================================================
+   DASHBOARD — PAINÉIS INTERATIVOS
+===================================================== */
+
+.gp-dashboard-detail-panel {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--gp-radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--gp-shadow-sm);
+  animation: gp-dashboard-panel-in 160ms ease;
+}
+
+.gp-dashboard-detail-panel-standby {
+  border-color: rgba(185, 119, 14, 0.28);
+  background: var(--gp-status-standby-bg);
+}
+
+@keyframes gp-dashboard-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gp-dashboard-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.gp-dashboard-detail-head h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--text-primary);
+}
+
+.gp-dashboard-detail-head p {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.gp-dashboard-detail-head > span {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: var(--gp-radius-pill);
+  background: var(--bg-hover);
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gp-dashboard-detail-panel-standby .gp-dashboard-detail-head > span {
+  background: rgba(185, 119, 14, 0.14);
+  color: var(--gp-status-standby);
+}
+
+.gp-dashboard-detail-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--gp-radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+/* =====================================================
+   DASHBOARD — HORÁRIOS LIVRES
+===================================================== */
+
+.gp-free-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.gp-free-slot {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--gp-radius-sm);
+  background: var(--bg-surface);
+}
+
+.gp-free-slot > svg {
+  flex: 0 0 auto;
+  color: var(--accent-strong);
+}
+
+.gp-free-slot > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gp-free-slot strong {
+  font-size: 0.86rem;
+  color: var(--text-primary);
+}
+
+.gp-free-slot span {
   font-size: 0.76rem;
   color: var(--text-secondary);
 }
 
-@media (max-width: 860px) {
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 980px) {
   .gp-summary-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 600px) {
   .gp-status-hero {
-    flex-direction: column;
     align-items: flex-start;
+    padding: 18px;
+  }
+
+  .gp-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gp-summary-card {
+    min-height: 68px;
+  }
+
+  .gp-dashboard-detail-head {
+    align-items: flex-start;
+  }
+
+  .gp-free-slots {
+    grid-template-columns: 1fr;
   }
 }
