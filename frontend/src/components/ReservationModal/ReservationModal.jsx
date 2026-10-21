@@ -110,6 +110,7 @@ export default function ReservationModal({ open, mode = "create", reserva, onClo
             <input
               type="date"
               value={form.data}
+              min={mode === "create" ? toISODate(new Date()) : undefined}
               onChange={(e) => setField("data", e.target.value)}
             />
             {errors.data && <em>{errors.data}</em>}
