@@ -14,6 +14,7 @@ import Header from "../../components/Header/Header";
 import ReservationCard from "../../components/ReservationCard/ReservationCard";
 import ReservationModal from "../../components/ReservationModal/ReservationModal";
 import ConflictModal from "../../components/ConflictModal/ConflictModal";
+import ManagedReservationDetails from "../../components/ReservationDetailsModal/ManagedReservationDetails";
 import EmptyState from "../../components/EmptyState/EmptyState";
 import { useReservas } from "../../hooks/useReservas";
 import { useReservationFlow } from "../../hooks/useReservationFlow";
@@ -46,6 +47,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
   const { reservas, loading, refetch } = useReservas({ data: today });
   const nowMinutes = useNowMinutes();
   const [activePanel, setActivePanel] = useState(null);
+  const [detailsReserva, setDetailsReserva] = useState(null);
 
   const flow = useReservationFlow({ onChanged: refetch });
 
@@ -278,7 +280,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
           ) : (
             <div className="gp-rescard-list">
               {ativas.map((r) => (
-                <ReservationCard key={r.id} reserva={r} onClick={flow.openEdit} />
+                <ReservationCard key={r.id} reserva={r} onClick={setDetailsReserva} />
               ))}
             </div>
           )}
@@ -303,7 +305,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
           </div>
 
           {proximas[0] ? (
-            <ReservationCard reserva={proximas[0]} onClick={flow.openEdit} />
+            <ReservationCard reserva={proximas[0]} onClick={setDetailsReserva} />
           ) : (
             <p className="gp-dashboard-detail-empty">A agenda restante do dia está livre.</p>
           )}
@@ -369,7 +371,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
           ) : (
             <div className="gp-rescard-list">
               {standByReservas.map((r) => (
-                <ReservationCard key={r.id} reserva={r} onClick={flow.openEdit} />
+                <ReservationCard key={r.id} reserva={r} onClick={setDetailsReserva} />
               ))}
             </div>
           )}
@@ -398,7 +400,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
         ) : (
           <div className="gp-rescard-list">
             {proximas.map((r) => (
-              <ReservationCard key={r.id} reserva={r} onClick={flow.openEdit} />
+              <ReservationCard key={r.id} reserva={r} onClick={setDetailsReserva} />
             ))}
           </div>
         )}
@@ -411,6 +413,11 @@ export default function Dashboard({ onOpenMobileMenu }) {
         submitting={flow.submitting}
         onClose={flow.closeForm}
         onSubmit={flow.submitForm}
+      />
+      <ManagedReservationDetails
+        reserva={detailsReserva}
+        onClose={() => setDetailsReserva(null)}
+        flow={flow}
       />
       <ConflictModal
         conflict={flow.conflict}

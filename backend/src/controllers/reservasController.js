@@ -166,19 +166,49 @@ const buscarConflitos = async (
 };
 
 /*
-    GREEN contra reservas só de MV/EXTERNO: oferece prioridade.
+    A prioridade da GREEN só pode ser usada enquanto faltar
+    MAIS de 24h para o início da reunião.
+
+    Ex.: MV marca hoje às 9h para amanhã às 12h; a GREEN pode
+    tomar o horário até hoje às 11h59. Uma reserva feita com
+    menos de 24h de antecedência nunca pode ser tomada.
+*/
+const MENSAGEM_PRAZO_PRIORIDADE =
+    "A prioridade da GREEN só pode ser usada com mais de 24h de antecedência do início da reunião.";
+
+const prioridadeNoPrazo = async (conexao, data, horaInicio) => {
+    const [[{ noPrazo }]] = await conexao.query(
+        "SELECT TIMESTAMP(?, ?) > NOW() + INTERVAL 24 HOUR AS noPrazo",
+        [data, horaInicio]
+    );
+
+    return noPrazo === 1;
+};
+
+/*
+    GREEN contra reservas só de MV/EXTERNO, com mais de 24h
+    de antecedência: oferece prioridade.
     Qualquer outro caso: conflito simples.
 */
-const erroDeConflito = (empresa, conflitos) => {
+const erroDeConflito = async (conexao, dados, conflitos) => {
     const existeReservaGreen = conflitos.some(
         reserva => reserva.empresa === "GREEN"
     );
 
-    if (empresa === "GREEN" && !existeReservaGreen) {
+    if (dados.empresa === "GREEN" && !existeReservaGreen) {
+        if (await prioridadeNoPrazo(conexao, dados.data, dados.hora_inicio)) {
+            return new ErroRegra(409, {
+                erro: "PRIORIDADE_DISPONIVEL",
+                mensagem:
+                    "Existe uma reserva externa neste horário. A GREEN possui prioridade.",
+                reservas: conflitos
+            });
+        }
+
         return new ErroRegra(409, {
-            erro: "PRIORIDADE_DISPONIVEL",
+            erro: "CONFLITO",
             mensagem:
-                "Existe uma reserva externa neste horário. A GREEN possui prioridade.",
+                `Já existe uma reserva externa neste horário. ${MENSAGEM_PRAZO_PRIORIDADE}`,
             reservas: conflitos
         });
     }
@@ -342,7 +372,7 @@ const criarReserva = async (req, res) => {
         const conflitos = await buscarConflitos(conexao, dados);
 
         if (conflitos.length > 0) {
-            throw erroDeConflito(dados.empresa, conflitos);
+            throw await erroDeConflito(conexao, dados, conflitos);
         }
 
         const [result] = await conexao.query(
@@ -444,6 +474,13 @@ const aplicarPrioridade = async (req, res) => {
             });
         }
 
+        if (!(await prioridadeNoPrazo(conexao, dados.data, dados.hora_inicio))) {
+            throw new ErroRegra(409, {
+                erro: "PRIORIDADE_FORA_DO_PRAZO",
+                mensagem: MENSAGEM_PRAZO_PRIORIDADE
+            });
+        }
+
         const idsExternos = conflitos.map(reserva => reserva.id);
 
         await conexao.query(
@@ -478,7 +515,8 @@ const aplicarPrioridade = async (req, res) => {
                         marcado_por = ?,
                         empresa = 'GREEN',
                         motivo = ?,
-                        status = 'AGENDADA'
+                        status = 'AGENDADA',
+                        hora_fim_prevista = NULL
                     WHERE id = ?
                 `,
                 [...valores, id]
@@ -552,7 +590,7 @@ const editarReserva = async (req, res) => {
             });
 
             if (conflitos.length > 0) {
-                throw erroDeConflito(dados.empresa, conflitos);
+                throw await erroDeConflito(conexao, dados, conflitos);
             }
         }
 
@@ -567,7 +605,8 @@ const editarReserva = async (req, res) => {
                     setor = ?,
                     marcado_por = ?,
                     empresa = ?,
-                    motivo = ?
+                    motivo = ?,
+                    hora_fim_prevista = NULL
                 WHERE id = ?
             `,
             [
@@ -708,6 +747,140 @@ const retomarReserva = async (req, res) => {
 
 
 // ======================================================
+// ENCERRAR ANTES DO HORÁRIO
+// ======================================================
+
+/*
+    A reunião acabou antes do previsto: o fim passa a ser o
+    horário atual e o restante do intervalo fica livre para
+    novas reservas (que precisam caber até a próxima reserva).
+
+    O fim original fica guardado em hora_fim_prevista.
+*/
+const encerrarReserva = async (req, res) => {
+    const { id } = req.params;
+
+    const horaFim = await comTransacao(async (conexao) => {
+        const reserva = await buscarReservaParaAlterar(conexao, id);
+
+        const agora = await agoraNoBanco(conexao);
+
+        if (
+            reserva.status !== "AGENDADA" ||
+            !jaComecou(reserva.data, reserva.hora_inicio, agora) ||
+            jaTerminou(reserva.data, reserva.hora_fim, agora)
+        ) {
+            throw new ErroRegra(409, {
+                erro: "ENCERRAMENTO_NAO_PERMITIDO",
+                mensagem:
+                    "Somente reuniões agendadas que estão em andamento podem ser encerradas."
+            });
+        }
+
+        await conexao.query(
+            `
+                UPDATE reservas
+                SET
+                    hora_fim_prevista = COALESCE(hora_fim_prevista, hora_fim),
+                    hora_fim = ?
+                WHERE id = ?
+            `,
+            [agora.hora, id]
+        );
+
+        return agora.hora;
+    });
+
+    res.json({
+        mensagem: "Reunião encerrada. O restante do horário está livre.",
+        hora_fim: horaFim
+    });
+};
+
+
+// ======================================================
+// ESTENDER HORÁRIO
+// ======================================================
+
+/*
+    A reunião precisa de mais tempo: o novo fim pode ir, no
+    máximo, até o início da próxima reserva agendada.
+*/
+const estenderReserva = async (req, res) => {
+    const { id } = req.params;
+
+    const novoFim =
+        typeof req.body?.hora_fim === "string"
+            ? hhmm(req.body.hora_fim)
+            : null;
+
+    if (!novoFim || !REGEX_HORA.test(novoFim)) {
+        return res.status(400).json({
+            erro: "Informe o novo horário final no formato HH:MM"
+        });
+    }
+
+    await comTransacao(async (conexao) => {
+        const reserva = await buscarReservaParaAlterar(conexao, id);
+
+        const agora = await agoraNoBanco(conexao);
+
+        if (
+            reserva.status !== "AGENDADA" ||
+            jaTerminou(reserva.data, reserva.hora_fim, agora)
+        ) {
+            throw new ErroRegra(409, {
+                erro: "EXTENSAO_NAO_PERMITIDA",
+                mensagem:
+                    "Somente reuniões agendadas que ainda não terminaram podem ser estendidas."
+            });
+        }
+
+        if (novoFim <= hhmm(reserva.hora_fim)) {
+            throw new ErroRegra(400, {
+                erro: "O novo horário final deve ser depois do fim atual."
+            });
+        }
+
+        const conflitos = await buscarConflitos(conexao, {
+            data: reserva.data,
+            hora_inicio: hhmm(reserva.hora_fim),
+            hora_fim: novoFim,
+            ignorarId: id
+        });
+
+        if (conflitos.length > 0) {
+            const limite = hhmm(conflitos[0].hora_inicio);
+
+            throw new ErroRegra(409, {
+                erro: "EXTENSAO_INDISPONIVEL",
+                mensagem:
+                    `Só é possível estender até ${limite}, quando começa a próxima reserva.`,
+                limite,
+                reservas: conflitos
+            });
+        }
+
+        await conexao.query(
+            `
+                UPDATE reservas
+                SET
+                    hora_fim_prevista = COALESCE(hora_fim_prevista, hora_fim),
+                    hora_fim = ?
+                WHERE id = ?
+            `,
+            [novoFim, id]
+        );
+    });
+
+    res.json({
+        mensagem: "Horário estendido com sucesso",
+        hora_fim: novoFim
+    });
+};
+
+
+// ======================================================
 // CANCELAR
 // ======================================================
 
@@ -765,5 +938,7 @@ module.exports = {
     editarReserva,
     pausarReserva,
     retomarReserva,
+    encerrarReserva,
+    estenderReserva,
     cancelarReserva
 };
