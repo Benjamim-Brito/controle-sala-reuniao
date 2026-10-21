@@ -7,7 +7,8 @@ import {
   Building2,
   MessageSquare,
   PauseCircle,
-  PlayCircle
+  PlayCircle,
+  UserCheck
 } from "lucide-react";
 
 import Modal from "../Modal";
@@ -126,6 +127,17 @@ export default function ReservationDetailsModal({
               {reserva.setor}
             </span>
           </div>
+
+
+          {reserva.marcado_por && (
+            <div className="gp-details-row">
+              <UserCheck size={16} />
+
+              <span>
+                Marcado por {reserva.marcado_por}
+              </span>
+            </div>
+          )}
 
 
           {reserva.motivo && (

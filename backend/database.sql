@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS reservas (
     responsavel VARCHAR(100) NOT NULL,
     setor VARCHAR(100) NOT NULL,
 
+    -- Colaborador da GREEN que fez a marcação
+    marcado_por VARCHAR(100) NULL,
+
     empresa ENUM(
         'GREEN',
         'MV',

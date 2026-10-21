@@ -52,7 +52,8 @@ export default function Reservas({ onOpenMobileMenu }) {
     return ativas.filter(
       (r) =>
         r.responsavel?.toLowerCase().includes(term) ||
-        r.setor?.toLowerCase().includes(term)
+        r.setor?.toLowerCase().includes(term) ||
+        r.marcado_por?.toLowerCase().includes(term)
     );
   }, [reservas, search, now]);
 
@@ -94,7 +95,7 @@ export default function Reservas({ onOpenMobileMenu }) {
           <Search size={15} />
           <input
             type="text"
-            placeholder="Buscar por responsável ou setor"
+            placeholder="Buscar por responsável, setor ou quem marcou"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -153,6 +154,7 @@ export default function Reservas({ onOpenMobileMenu }) {
               <p className="gp-reservas-card-title">{r.motivo || r.responsavel}</p>
               <p className="gp-reservas-card-meta">
                 {r.responsavel} · {r.setor}
+                {r.marcado_por && ` · marcado por ${r.marcado_por}`}
               </p>
               <div className="gp-reservas-card-bottom">
                 <EmpresaBadge empresa={r.empresa} size="sm" />
@@ -188,6 +190,7 @@ export default function Reservas({ onOpenMobileMenu }) {
                 <th>Horário</th>
                 <th>Responsável</th>
                 <th>Setor</th>
+                <th>Marcado por</th>
                 <th>Empresa</th>
                 <th>Motivo</th>
                 <th>Status</th>
@@ -203,6 +206,7 @@ export default function Reservas({ onOpenMobileMenu }) {
                   </td>
                   <td>{r.responsavel}</td>
                   <td>{r.setor}</td>
+                  <td>{r.marcado_por || "—"}</td>
                   <td>
                     <EmpresaBadge empresa={r.empresa} size="sm" />
                   </td>
