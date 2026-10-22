@@ -391,6 +391,94 @@ export function useReservationFlow({
     );
 
 
+  // ====================================================
+  // ENCERRAR ANTES DO HORÁRIO
+  // ====================================================
+
+  const endReservation =
+    useCallback(
+      async (reserva) => {
+        if (!reserva) return false;
+
+        setChangingStatus(true);
+
+        try {
+          const resposta =
+            await reservasApi.encerrar(
+              reserva.id
+            );
+
+          toast.success(
+            `Reunião encerrada às ${resposta.hora_fim}. O restante do horário está livre.`
+          );
+
+          onChanged?.();
+
+          return true;
+        } catch (err) {
+          const mensagem =
+            err instanceof ApiError
+              ? err.message
+              : "Não foi possível encerrar a reunião.";
+
+          toast.error(mensagem);
+
+          return false;
+        } finally {
+          setChangingStatus(false);
+        }
+      },
+      [
+        onChanged,
+        toast
+      ]
+    );
+
+
+  // ====================================================
+  // ESTENDER HORÁRIO
+  // ====================================================
+
+  const extendReservation =
+    useCallback(
+      async (reserva, horaFim) => {
+        if (!reserva || !horaFim) return false;
+
+        setChangingStatus(true);
+
+        try {
+          await reservasApi.estender(
+            reserva.id,
+            horaFim
+          );
+
+          toast.success(
+            `Reunião estendida até ${horaFim}.`
+          );
+
+          onChanged?.();
+
+          return true;
+        } catch (err) {
+          const mensagem =
+            err instanceof ApiError
+              ? err.message
+              : "Não foi possível estender a reunião.";
+
+          toast.error(mensagem);
+
+          return false;
+        } finally {
+          setChangingStatus(false);
+        }
+      },
+      [
+        onChanged,
+        toast
+      ]
+    );
+
+
   return {
     formState,
 
@@ -413,6 +501,8 @@ export function useReservationFlow({
 
     pauseReservation,
     resumeReservation,
+    endReservation,
+    extendReservation,
     changingStatus
   };
 }

@@ -74,6 +74,24 @@ export default function Reservas({ onOpenMobileMenu }) {
       }
   }
 
+  async function handleEnd(reserva) {
+      const sucesso = await flow.endReservation(reserva);
+
+      if (sucesso) {
+          setDetailsReserva(null);
+      }
+  }
+
+  async function handleExtend(reserva, horaFim) {
+      const sucesso = await flow.extendReservation(reserva, horaFim);
+
+      if (sucesso) {
+          setDetailsReserva(null);
+      }
+
+      return sucesso;
+  }
+
   async function handleResume(reserva) {
       const sucesso = await flow.resumeReservation(reserva);
 
@@ -249,6 +267,8 @@ export default function Reservas({ onOpenMobileMenu }) {
             onCancel={handleCancel}
             onPause={handlePause}
             onResume={handleResume}
+            onEnd={handleEnd}
+            onExtend={handleExtend}
             changingStatus={flow.changingStatus}
         />
 

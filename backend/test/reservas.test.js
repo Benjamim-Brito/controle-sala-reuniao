@@ -55,7 +55,7 @@ const minutos = (hora) => {
 const hora = (min) =>
     `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 
-let AMANHA;
+let FUTURO;
 let ONTEM;
 let HOJE;
 let AGORA;
@@ -91,13 +91,13 @@ before(async () => {
     const [[datas]] = await db.query(`
         SELECT
             CURDATE() AS hoje,
-            CURDATE() + INTERVAL 1 DAY AS amanha,
+            CURDATE() + INTERVAL 2 DAY AS futuro,
             CURDATE() - INTERVAL 1 DAY AS ontem,
             CURTIME() AS agora
     `);
 
     HOJE = datas.hoje;
-    AMANHA = datas.amanha;
+    FUTURO = datas.futuro;
     ONTEM = datas.ontem;
     AGORA = minutos(datas.agora);
 
@@ -125,33 +125,33 @@ beforeEach(async () => {
 // ======================================================
 
 test("cria reserva em horário livre", async () => {
-    const r = await criar(AMANHA, "09:00", "10:00", "GREEN");
+    const r = await criar(FUTURO, "09:00", "10:00", "GREEN");
 
     assert.equal(r.status, 201);
     assert.equal(await status(r.body.id), "AGENDADA");
 });
 
 test("GREEN contra GREEN bloqueia", async () => {
-    await criar(AMANHA, "09:00", "10:00", "GREEN");
+    await criar(FUTURO, "09:00", "10:00", "GREEN");
 
-    const r = await criar(AMANHA, "09:30", "10:30", "GREEN");
+    const r = await criar(FUTURO, "09:30", "10:30", "GREEN");
 
     assert.equal(r.status, 409);
     assert.equal(r.body.erro, "CONFLITO");
 });
 
 test("MV contra GREEN bloqueia sem oferecer prioridade", async () => {
-    await criar(AMANHA, "09:00", "10:00", "GREEN");
+    await criar(FUTURO, "09:00", "10:00", "GREEN");
 
-    const r = await criar(AMANHA, "09:30", "10:30", "MV");
+    const r = await criar(FUTURO, "09:30", "10:30", "MV");
 
     assert.equal(r.body.erro, "CONFLITO");
 });
 
 test("GREEN contra MV oferece prioridade", async () => {
-    await criar(AMANHA, "09:00", "10:00", "MV");
+    await criar(FUTURO, "09:00", "10:00", "MV");
 
-    const r = await criar(AMANHA, "09:00", "10:00", "GREEN");
+    const r = await criar(FUTURO, "09:00", "10:00", "GREEN");
 
     assert.equal(r.body.erro, "PRIORIDADE_DISPONIVEL");
 });
@@ -165,17 +165,17 @@ test("não aceita reserva no passado", async () => {
 test("valida formato de data e hora", async () => {
     assert.equal((await criar("abc", "09:00", "10:00", "MV")).status, 400);
     assert.equal((await criar("2026-02-30", "09:00", "10:00", "MV")).status, 400);
-    assert.equal((await criar(AMANHA, "08:00", "25:00", "MV")).status, 400);
+    assert.equal((await criar(FUTURO, "08:00", "25:00", "MV")).status, 400);
 });
 
 test("exige o colaborador da GREEN que marcou e o salva", async () => {
-    const semColaborador = await criar(AMANHA, "09:00", "10:00", "MV", {
+    const semColaborador = await criar(FUTURO, "09:00", "10:00", "MV", {
         marcado_por: "  "
     });
 
     assert.equal(semColaborador.status, 400);
 
-    const r = await criar(AMANHA, "09:00", "10:00", "MV", {
+    const r = await criar(FUTURO, "09:00", "10:00", "MV", {
         marcado_por: "Ana (Green)"
     });
 
@@ -199,7 +199,7 @@ test("JSON malformado devolve 400 em JSON", async () => {
 test("pedidos simultâneos no mesmo horário criam só uma reserva", async () => {
     const respostas = await Promise.all(
         Array.from({ length: 20 }, () =>
-            criar(AMANHA, "09:00", "10:00", "MV")
+            criar(FUTURO, "09:00", "10:00", "MV")
         )
     );
 
@@ -212,12 +212,12 @@ test("pedidos simultâneos no mesmo horário criam só uma reserva", async () =>
 // ======================================================
 
 test("prioridade na criação: MV vira CONFLITO e GREEN fica AGENDADA", async () => {
-    const mv = await criar(AMANHA, "09:00", "10:00", "MV");
+    const mv = await criar(FUTURO, "09:00", "10:00", "MV");
 
     const r = await api(
         "POST",
         "/reservas/prioridade",
-        reserva(AMANHA, "09:00", "10:00")
+        reserva(FUTURO, "09:00", "10:00")
     );
 
     assert.equal(r.status, 201);
@@ -226,26 +226,26 @@ test("prioridade na criação: MV vira CONFLITO e GREEN fica AGENDADA", async ()
 });
 
 test("prioridade na edição atualiza a reserva original sem duplicar", async () => {
-    const green = await criar(AMANHA, "14:00", "15:00", "GREEN");
-    const mv = await criar(AMANHA, "16:00", "17:00", "MV");
+    const green = await criar(FUTURO, "14:00", "15:00", "GREEN");
+    const mv = await criar(FUTURO, "16:00", "17:00", "MV");
 
     const edicao = await api(
         "PUT",
         `/reservas/${green.body.id}`,
-        reserva(AMANHA, "16:00", "17:00", "GREEN")
+        reserva(FUTURO, "16:00", "17:00", "GREEN")
     );
 
     assert.equal(edicao.body.erro, "PRIORIDADE_DISPONIVEL");
 
     const r = await api("POST", "/reservas/prioridade", {
-        ...reserva(AMANHA, "16:00", "17:00"),
+        ...reserva(FUTURO, "16:00", "17:00"),
         id: green.body.id
     });
 
     assert.equal(r.status, 200);
     assert.equal(r.body.id, green.body.id);
 
-    const lista = (await api("GET", `/reservas?data=${AMANHA}`)).body;
+    const lista = (await api("GET", `/reservas?data=${FUTURO}`)).body;
     const greens = lista.filter(x => x.empresa === "GREEN");
 
     assert.equal(greens.length, 1);
@@ -254,15 +254,15 @@ test("prioridade na edição atualiza a reserva original sem duplicar", async ()
 });
 
 test("prioridades simultâneas criam só uma reserva GREEN", async () => {
-    await criar(AMANHA, "09:00", "10:00", "MV");
+    await criar(FUTURO, "09:00", "10:00", "MV");
 
     await Promise.all(
         Array.from({ length: 5 }, () =>
-            api("POST", "/reservas/prioridade", reserva(AMANHA, "09:00", "10:00"))
+            api("POST", "/reservas/prioridade", reserva(FUTURO, "09:00", "10:00"))
         )
     );
 
-    const lista = (await api("GET", `/reservas?data=${AMANHA}`)).body;
+    const lista = (await api("GET", `/reservas?data=${FUTURO}`)).body;
 
     assert.equal(
         lista.filter(x => x.empresa === "GREEN" && x.status === "AGENDADA").length,
@@ -276,14 +276,14 @@ test("prioridades simultâneas criam só uma reserva GREEN", async () => {
 // ======================================================
 
 test("reserva cancelada não pode ser editada nem reativada", async () => {
-    const r = await criar(AMANHA, "18:00", "19:00", "MV");
+    const r = await criar(FUTURO, "18:00", "19:00", "MV");
 
     await api("PATCH", `/reservas/${r.body.id}/cancelar`);
 
     const edicao = await api(
         "PUT",
         `/reservas/${r.body.id}`,
-        reserva(AMANHA, "18:00", "19:00", "MV")
+        reserva(FUTURO, "18:00", "19:00", "MV")
     );
 
     assert.equal(edicao.status, 409);
@@ -291,13 +291,13 @@ test("reserva cancelada não pode ser editada nem reativada", async () => {
 });
 
 test("cancelar duas vezes e cancelar reserva em CONFLITO são recusados", async () => {
-    const r = await criar(AMANHA, "18:00", "19:00", "MV");
+    const r = await criar(FUTURO, "18:00", "19:00", "MV");
 
     assert.equal((await api("PATCH", `/reservas/${r.body.id}/cancelar`)).status, 200);
     assert.equal((await api("PATCH", `/reservas/${r.body.id}/cancelar`)).status, 409);
 
-    const mv = await criar(AMANHA, "09:00", "10:00", "MV");
-    await api("POST", "/reservas/prioridade", reserva(AMANHA, "09:00", "10:00"));
+    const mv = await criar(FUTURO, "09:00", "10:00", "MV");
+    await api("POST", "/reservas/prioridade", reserva(FUTURO, "09:00", "10:00"));
 
     assert.equal((await api("PATCH", `/reservas/${mv.body.id}/cancelar`)).status, 409);
     assert.equal((await api("PATCH", "/reservas/99999/cancelar")).status, 404);
@@ -315,7 +315,7 @@ test("reserva encerrada não pode ser cancelada, editada nem pausada", async () 
     assert.equal((await api("PATCH", `/reservas/${id}/cancelar`)).status, 409);
     assert.equal((await api("PATCH", `/reservas/${id}/standby`)).status, 409);
     assert.equal(
-        (await api("PUT", `/reservas/${id}`, reserva(AMANHA, "09:00", "10:00", "MV"))).status,
+        (await api("PUT", `/reservas/${id}`, reserva(FUTURO, "09:00", "10:00", "MV"))).status,
         409
     );
 });
@@ -326,10 +326,10 @@ test("reserva encerrada não pode ser cancelada, editada nem pausada", async () 
 // ======================================================
 
 test("retomar reunião futura com horário ocupado continua em STAND_BY", async () => {
-    const r = await criar(AMANHA, "20:00", "21:00", "GREEN");
+    const r = await criar(FUTURO, "20:00", "21:00", "GREEN");
 
     await api("PATCH", `/reservas/${r.body.id}/standby`);
-    await criar(AMANHA, "20:30", "21:00", "MV");
+    await criar(FUTURO, "20:30", "21:00", "MV");
 
     const retomada = await api("PATCH", `/reservas/${r.body.id}/retomar`);
 
@@ -338,7 +338,7 @@ test("retomar reunião futura com horário ocupado continua em STAND_BY", async 
 });
 
 test("retomar reunião futura com horário livre volta a AGENDADA", async () => {
-    const r = await criar(AMANHA, "20:00", "21:00", "GREEN");
+    const r = await criar(FUTURO, "20:00", "21:00", "GREEN");
 
     await api("PATCH", `/reservas/${r.body.id}/standby`);
 
@@ -370,3 +370,150 @@ test(
         assert.equal(await status(result.insertId), "STAND_BY");
     }
 );
+
+
+// ======================================================
+// PRAZO DE 24H DA PRIORIDADE
+// ======================================================
+
+// Data e hora (HH:MM) de daqui a N horas, pelo relógio do banco
+const daquiA = async (horas) => {
+    const [[r]] = await db.query(
+        `SELECT
+            DATE(NOW() + INTERVAL ? HOUR) AS data,
+            TIME_FORMAT(NOW() + INTERVAL ? HOUR, '%H:%i') AS hora`,
+        [horas, horas]
+    );
+
+    return r;
+};
+
+test("GREEN não pode tomar reserva que começa em menos de 24h", async (t) => {
+    const inicio = await daquiA(23);
+
+    if (minutos(inicio.hora) > 23 * 60) {
+        t.skip("perto da meia-noite");
+        return;
+    }
+
+    const fim = hora(minutos(inicio.hora) + 30);
+
+    const mv = await criar(inicio.data, inicio.hora, fim, "MV");
+    const green = await criar(inicio.data, inicio.hora, fim, "GREEN");
+
+    assert.equal(green.body.erro, "CONFLITO");
+    assert.match(green.body.mensagem, /24h/);
+
+    // Nem chamando a rota de prioridade diretamente
+    const direto = await api(
+        "POST",
+        "/reservas/prioridade",
+        reserva(inicio.data, inicio.hora, fim)
+    );
+
+    assert.equal(direto.body.erro, "PRIORIDADE_FORA_DO_PRAZO");
+    assert.equal(await status(mv.body.id), "AGENDADA");
+});
+
+test("GREEN pode tomar reserva que começa em mais de 24h", async (t) => {
+    const inicio = await daquiA(25);
+
+    if (minutos(inicio.hora) > 23 * 60) {
+        t.skip("perto da meia-noite");
+        return;
+    }
+
+    const fim = hora(minutos(inicio.hora) + 30);
+
+    await criar(inicio.data, inicio.hora, fim, "MV");
+
+    const green = await criar(inicio.data, inicio.hora, fim, "GREEN");
+
+    assert.equal(green.body.erro, "PRIORIDADE_DISPONIVEL");
+});
+
+
+// ======================================================
+// ENCERRAR ANTES E ESTENDER
+// ======================================================
+
+const reservaEmAndamento = async (inicio, fim) => {
+    const [result] = await db.query(
+        `INSERT INTO reservas (data, hora_inicio, hora_fim, responsavel, setor, empresa)
+         VALUES (?, ?, ?, 'Teste', 'TI', 'GREEN')`,
+        [HOJE, hora(inicio), hora(fim)]
+    );
+
+    return result.insertId;
+};
+
+test("encerrar agora libera o restante do horário", async (t) => {
+    if (AGORA < 30 || AGORA > 22 * 60) {
+        t.skip("perto da meia-noite");
+        return;
+    }
+
+    const id = await reservaEmAndamento(AGORA - 20, AGORA + 60);
+
+    const r = await api("PATCH", `/reservas/${id}/encerrar`);
+
+    assert.equal(r.status, 200);
+
+    const salva = (await api("GET", `/reservas/${id}`)).body;
+
+    assert.equal(salva.hora_fim_prevista, `${hora(AGORA + 60)}:00`);
+    assert.ok(minutos(salva.hora_fim) <= AGORA + 1);
+
+    // Uma reunião rápida cabe no tempo liberado
+    const rapida = await criar(HOJE, hora(AGORA + 5), hora(AGORA + 60), "MV");
+
+    assert.equal(rapida.status, 201);
+});
+
+test("encerrar só vale para reunião em andamento", async () => {
+    const futura = await criar(FUTURO, "09:00", "10:00", "GREEN");
+
+    const r = await api("PATCH", `/reservas/${futura.body.id}/encerrar`);
+
+    assert.equal(r.body.erro, "ENCERRAMENTO_NAO_PERMITIDO");
+});
+
+test("estender só até o início da próxima reserva", async (t) => {
+    if (AGORA < 30 || AGORA > 21 * 60) {
+        t.skip("perto da meia-noite");
+        return;
+    }
+
+    const id = await reservaEmAndamento(AGORA - 20, AGORA + 30);
+
+    // Próxima reserva começa 1h depois do fim
+    await criar(HOJE, hora(AGORA + 90), hora(AGORA + 120), "MV");
+
+    const demais = await api("PATCH", `/reservas/${id}/estender`, {
+        hora_fim: hora(AGORA + 100)
+    });
+
+    assert.equal(demais.body.erro, "EXTENSAO_INDISPONIVEL");
+    assert.equal(demais.body.limite, hora(AGORA + 90));
+
+    const ok = await api("PATCH", `/reservas/${id}/estender`, {
+        hora_fim: hora(AGORA + 90)
+    });
+
+    assert.equal(ok.status, 200);
+
+    const salva = (await api("GET", `/reservas/${id}`)).body;
+
+    assert.equal(salva.hora_fim, `${hora(AGORA + 90)}:00`);
+    assert.equal(salva.hora_fim_prevista, `${hora(AGORA + 30)}:00`);
+});
+
+test("estender recusa horário anterior ao fim atual", async () => {
+    const r = await criar(FUTURO, "09:00", "10:00", "GREEN");
+
+    const menor = await api("PATCH", `/reservas/${r.body.id}/estender`, {
+        hora_fim: "09:30"
+    });
+
+    assert.equal(menor.status, 400);
+});

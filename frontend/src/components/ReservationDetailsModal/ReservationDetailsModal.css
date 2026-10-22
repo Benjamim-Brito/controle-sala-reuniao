@@ -107,3 +107,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ENCERRAR / ESTENDER */
+
+.gp-details-previsto {
+  font-style: normal;
+
+  color: var(--text-muted);
+}
+
+
+.gp-details-extend {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+
+.gp-details-extend-hint {
+  font-size: 0.8rem;
+
+  color: var(--text-secondary);
+}
+
+
+.gp-details-extend-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+}
