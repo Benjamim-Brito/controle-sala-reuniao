@@ -3,32 +3,49 @@
 }
 
 /*
-  Plano de fundo decorativo, fixo atrás do conteúdo:
-  folhas em traço fino entrando pelos cantos (meio ambiente / paperless)
-  e um brilho verde suave nos cantos. Os desenhos ficam em tokens.css.
+  Plano de fundo decorativo, fixo atrás do conteúdo (meio ambiente / paperless).
+  ::before: brilho verde suave nos cantos.
+  ::after: ramos de folhas. Os desenhos (src/assets/folhas) são usados como
+  máscara, então a cor vem do token --bg-leaf de cada tema.
 */
-.gp-shell::before {
+.gp-shell::before,
+.gp-shell::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+}
+
+.gp-shell::before {
   background:
-    var(--bg-leaf-a) right -30px top -30px / 400px auto no-repeat,
-    var(--bg-leaf-b) right 80px bottom -20px / 300px auto no-repeat,
-    var(--bg-leaf-b) left calc(var(--gp-sidebar-w) - 90px) bottom -60px / 240px auto no-repeat,
     radial-gradient(60% 50% at 100% 0%, var(--bg-glow-a), transparent 70%),
     radial-gradient(50% 45% at 0% 100%, var(--bg-glow-b), transparent 70%);
 }
 
-/* Sem a sidebar fixa (celular), folhas menores e encostadas na borda */
+.gp-shell::after {
+  background: var(--bg-leaf);
+  -webkit-mask:
+    url("./assets/folhas/ramo-grande.svg") right -20px top -20px / 520px auto no-repeat,
+    url("./assets/folhas/ramo-pequeno.svg") right 0 bottom 0 / 380px auto no-repeat,
+    url("./assets/folhas/folha-solta.svg") right 30% bottom 18% / 120px auto no-repeat,
+    url("./assets/folhas/broto.svg") left calc(var(--gp-sidebar-w) - 10px) bottom 0 / 220px auto no-repeat;
+  mask:
+    url("./assets/folhas/ramo-grande.svg") right -20px top -20px / 520px auto no-repeat,
+    url("./assets/folhas/ramo-pequeno.svg") right 0 bottom 0 / 380px auto no-repeat,
+    url("./assets/folhas/folha-solta.svg") right 30% bottom 18% / 120px auto no-repeat,
+    url("./assets/folhas/broto.svg") left calc(var(--gp-sidebar-w) - 10px) bottom 0 / 220px auto no-repeat;
+}
+
+/* Sem a sidebar fixa (celular), ramos menores e encostados nas bordas */
 @media (max-width: 860px) {
-  .gp-shell::before {
-    background:
-      var(--bg-leaf-a) right -60px top -50px / 260px auto no-repeat,
-      var(--bg-leaf-b) left -70px bottom -50px / 200px auto no-repeat,
-      radial-gradient(70% 40% at 100% 0%, var(--bg-glow-a), transparent 70%),
-      radial-gradient(60% 40% at 0% 100%, var(--bg-glow-b), transparent 70%);
+  .gp-shell::after {
+    -webkit-mask:
+      url("./assets/folhas/ramo-grande.svg") right -60px top -40px / 300px auto no-repeat,
+      url("./assets/folhas/broto.svg") left -20px bottom 0 / 160px auto no-repeat;
+    mask:
+      url("./assets/folhas/ramo-grande.svg") right -60px top -40px / 300px auto no-repeat,
+      url("./assets/folhas/broto.svg") left -20px bottom 0 / 160px auto no-repeat;
   }
 }
 
