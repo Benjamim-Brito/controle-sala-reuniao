@@ -19,7 +19,17 @@ import EmptyState from "../../components/EmptyState/EmptyState";
 import { useReservas } from "../../hooks/useReservas";
 import { useReservationFlow } from "../../hooks/useReservationFlow";
 import { useSettings } from "../../hooks/useSettings";
-import { todayISO, formatTime, timeToMinutes, weekdayLong, formatDateBR } from "../../utils/date";
+import {
+  todayISO,
+  formatTime,
+  timeToMinutes,
+  weekdayLong,
+  formatDateBR,
+  weekDates,
+  endOfMonth,
+  addDays,
+  isReservationPast,
+} from "../../utils/date";
 import { STATUS } from "../../utils/status";
 import "./Dashboard.css";
 
@@ -51,6 +61,19 @@ function formatDuracao(minutos) {
   return `${horas}h ${resto}min`;
 }
 
+// Abas da lista de próximas reservas
+const PERIODOS = [
+  { id: "dia", label: "Hoje", vazio: "Nenhuma reserva para hoje" },
+  { id: "semana", label: "Esta semana", vazio: "Nenhuma reserva no resto da semana" },
+  { id: "mes", label: "Este mês", vazio: "Nenhuma reserva no resto do mês" },
+];
+
+function rotuloDia(data, hoje) {
+  if (data === hoje) return "Hoje";
+  if (data === addDays(hoje, 1)) return "Amanhã";
+  return `${weekdayLong(data)}, ${formatDateBR(data)}`;
+}
+
 export default function Dashboard({ onOpenMobileMenu }) {
   const today = todayISO();
   const { settings } = useSettings();
@@ -58,8 +81,21 @@ export default function Dashboard({ onOpenMobileMenu }) {
   const nowMinutes = useNowMinutes();
   const [activePanel, setActivePanel] = useState(null);
   const [detailsReserva, setDetailsReserva] = useState(null);
+  const [periodo, setPeriodo] = useState("dia");
 
-  const flow = useReservationFlow({ onChanged: refetch });
+  const fimPeriodo = periodo === "semana" ? weekDates(today)[6] : endOfMonth(today);
+  const {
+    reservas: reservasPeriodo,
+    loading: loadingPeriodo,
+    refetch: refetchPeriodo,
+  } = useReservas({ data_inicio: today, data_fim: periodo === "dia" ? today : fimPeriodo });
+
+  const flow = useReservationFlow({
+    onChanged: () => {
+      refetch();
+      refetchPeriodo();
+    },
+  });
 
   const ativas = useMemo(
     () =>
@@ -102,6 +138,29 @@ export default function Dashboard({ onOpenMobileMenu }) {
   );
 
   const standByCount = standByReservas.length;
+
+  // Semana/mês: reservas ativas que ainda não terminaram, agrupadas por dia
+  const gruposPeriodo = useMemo(() => {
+    const agora = new Date();
+    const grupos = new Map();
+
+    reservasPeriodo
+      .filter(
+        (r) =>
+          (r.status === STATUS.AGENDADA || r.status === STATUS.STAND_BY) &&
+          !isReservationPast(r.data, r.hora_fim, agora)
+      )
+      .forEach((r) => {
+        if (!grupos.has(r.data)) grupos.set(r.data, []);
+        grupos.get(r.data).push(r);
+      });
+
+    return [...grupos.entries()].map(([data, lista]) => ({ data, reservas: lista }));
+    // nowMinutes recalcula a lista quando o relógio avança
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reservasPeriodo, nowMinutes]);
+
+  const periodoAtual = PERIODOS.find((p) => p.id === periodo);
 
   const intervalosLivres = useMemo(() => {
     // O período que já passou não conta como horário livre
@@ -381,17 +440,34 @@ export default function Dashboard({ onOpenMobileMenu }) {
       )}
 
       <section className="gp-section">
-        <h3 className="gp-section-title">Próximas reservas</h3>
-        {loading ? (
+        <div className="gp-section-head">
+          <h3 className="gp-section-title gp-dashboard-list-title">Próximas reservas</h3>
+          <div className="gp-tabs" role="tablist" aria-label="Período">
+            {PERIODOS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={periodo === p.id}
+                className={`gp-tab ${periodo === p.id ? "is-active" : ""}`}
+                onClick={() => setPeriodo(p.id)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {(periodo === "dia" ? loading : loadingPeriodo) ? (
           <div className="gp-skeleton-list">
             {[1, 2, 3].map((i) => (
               <div key={i} className="gp-skeleton-card" />
             ))}
           </div>
-        ) : proximas.length === 0 ? (
+        ) : (periodo === "dia" ? proximas.length === 0 : gruposPeriodo.length === 0) ? (
           <EmptyState
             icon={CalendarCheck2}
-            title="Nenhuma reserva para hoje"
+            title={periodoAtual.vazio}
             description="A sala está livre durante todo o período."
             action={
               <button className="gp-btn gp-btn-primary gp-btn-sm" onClick={() => flow.openCreate()}>
@@ -399,10 +475,28 @@ export default function Dashboard({ onOpenMobileMenu }) {
               </button>
             }
           />
-        ) : (
+        ) : periodo === "dia" ? (
           <div className="gp-rescard-list">
             {proximas.map((r) => (
               <ReservationCard key={r.id} reserva={r} onClick={setDetailsReserva} />
+            ))}
+          </div>
+        ) : (
+          <div className="gp-dashboard-days">
+            {gruposPeriodo.map((grupo) => (
+              <div key={grupo.data} className="gp-dashboard-day">
+                <h4 className="gp-dashboard-day-title">
+                  {rotuloDia(grupo.data, today)}
+                  <span>
+                    {grupo.reservas.length} {grupo.reservas.length === 1 ? "reserva" : "reservas"}
+                  </span>
+                </h4>
+                <div className="gp-rescard-list">
+                  {grupo.reservas.map((r) => (
+                    <ReservationCard key={r.id} reserva={r} onClick={setDetailsReserva} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

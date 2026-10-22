@@ -92,6 +92,12 @@ export function weekDates(isoDate) {
   });
 }
 
+/** Último dia do mês que contém `isoDate` ("2026-02-10" -> "2026-02-28") */
+export function endOfMonth(isoDate) {
+  const d = fromISODate(isoDate);
+  return toISODate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+}
+
 export function addDays(isoDate, days) {
   const d = fromISODate(isoDate);
   d.setDate(d.getDate() + days);

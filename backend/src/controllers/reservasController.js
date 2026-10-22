@@ -290,7 +290,22 @@ const validarEdicao = (reservaAtual, dados, agora) => {
 // ======================================================
 
 const listarReservas = async (req, res) => {
-    const { data, status, empresa } = req.query;
+    const { data, data_inicio, data_fim, status, empresa } = req.query;
+
+    // Período (ex.: semana ou mês do Dashboard), com as duas pontas inclusivas
+    for (const valor of [data_inicio, data_fim]) {
+        if (valor !== undefined && !dataValida(valor)) {
+            return res.status(400).json({
+                erro: "Período inválido. Use datas no formato AAAA-MM-DD."
+            });
+        }
+    }
+
+    if (data_inicio && data_fim && data_inicio > data_fim) {
+        return res.status(400).json({
+            erro: "A data inicial do período deve ser anterior à data final."
+        });
+    }
 
     let sql = `
         SELECT *
@@ -303,6 +318,16 @@ const listarReservas = async (req, res) => {
     if (data) {
         sql += " AND data = ?";
         valores.push(data);
+    }
+
+    if (data_inicio) {
+        sql += " AND data >= ?";
+        valores.push(data_inicio);
+    }
+
+    if (data_fim) {
+        sql += " AND data <= ?";
+        valores.push(data_fim);
     }
 
     if (status) {

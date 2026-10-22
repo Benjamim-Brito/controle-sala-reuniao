@@ -185,6 +185,29 @@ test("exige o colaborador da GREEN que marcou e o salva", async () => {
     assert.equal(salva.empresa, "MV");
 });
 
+test("lista reservas de um período com as duas datas inclusivas", async () => {
+    const depois = (dias) => {
+        const [a, m, d] = FUTURO.split("-").map(Number);
+        const data = new Date(Date.UTC(a, m - 1, d + dias));
+        return data.toISOString().slice(0, 10);
+    };
+
+    await criar(FUTURO, "09:00", "10:00", "GREEN");
+    await criar(depois(3), "09:00", "10:00", "MV");
+    await criar(depois(10), "09:00", "10:00", "EXTERNO");
+
+    const r = await api("GET", `/reservas?data_inicio=${FUTURO}&data_fim=${depois(3)}`);
+
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.body.map((x) => x.empresa), ["GREEN", "MV"]);
+
+    assert.equal((await api("GET", "/reservas?data_inicio=abc")).status, 400);
+    assert.equal(
+        (await api("GET", `/reservas?data_inicio=${depois(3)}&data_fim=${FUTURO}`)).status,
+        400
+    );
+});
+
 test("JSON malformado devolve 400 em JSON", async () => {
     const resposta = await fetch(base + "/reservas", {
         method: "POST",
