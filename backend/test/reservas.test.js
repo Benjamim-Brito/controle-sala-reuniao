@@ -39,6 +39,7 @@ const reserva = (data, hora_inicio, hora_fim, empresa, extra = {}) => ({
     empresa,
     responsavel: "Teste",
     setor: "TI",
+    marcado_por: "Colaborador Green",
     ...extra
 });
 
@@ -71,10 +72,17 @@ before(async () => {
     const fs = require("node:fs");
     const path = require("node:path");
 
+    // Proteção: os testes apagam o banco, então só rodam num banco "_test"
+    if (!process.env.DB_NAME.endsWith("_test")) {
+        throw new Error("DB_NAME_TEST precisa terminar com _test");
+    }
+
     const schema = fs
         .readFileSync(path.join(__dirname, "..", "database.sql"), "utf8")
         .replaceAll("controle_sala_reuniao", process.env.DB_NAME);
 
+    // Recria o banco de teste para refletir sempre o schema atual
+    await conexao.query(`DROP DATABASE IF EXISTS \`${process.env.DB_NAME}\``);
     await conexao.query(schema);
     await conexao.end();
 
@@ -158,6 +166,23 @@ test("valida formato de data e hora", async () => {
     assert.equal((await criar("abc", "09:00", "10:00", "MV")).status, 400);
     assert.equal((await criar("2026-02-30", "09:00", "10:00", "MV")).status, 400);
     assert.equal((await criar(AMANHA, "08:00", "25:00", "MV")).status, 400);
+});
+
+test("exige o colaborador da GREEN que marcou e o salva", async () => {
+    const semColaborador = await criar(AMANHA, "09:00", "10:00", "MV", {
+        marcado_por: "  "
+    });
+
+    assert.equal(semColaborador.status, 400);
+
+    const r = await criar(AMANHA, "09:00", "10:00", "MV", {
+        marcado_por: "Ana (Green)"
+    });
+
+    const salva = (await api("GET", `/reservas/${r.body.id}`)).body;
+
+    assert.equal(salva.marcado_por, "Ana (Green)");
+    assert.equal(salva.empresa, "MV");
 });
 
 test("JSON malformado devolve 400 em JSON", async () => {

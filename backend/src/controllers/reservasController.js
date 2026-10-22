@@ -59,6 +59,10 @@ const lerDadosReserva = (body = {}) => ({
         typeof body.setor === "string"
             ? body.setor.trim()
             : body.setor,
+    marcado_por:
+        typeof body.marcado_por === "string"
+            ? body.marcado_por.trim()
+            : body.marcado_por,
     empresa: body.empresa,
     motivo:
         typeof body.motivo === "string" && body.motivo.trim()
@@ -72,7 +76,8 @@ const validarDadosReserva = ({
     hora_fim,
     responsavel,
     setor,
-    empresa
+    empresa,
+    marcado_por
 }) => {
     if (
         !data ||
@@ -83,6 +88,11 @@ const validarDadosReserva = ({
         !empresa
     ) {
         return "Preencha todos os campos obrigatórios";
+    }
+
+    // Só colaboradores da GREEN marcam reuniões
+    if (!marcado_por) {
+        return "Informe o colaborador da GREEN que está marcando a reunião";
     }
 
     if (!dataValida(data)) {
@@ -344,11 +354,12 @@ const criarReserva = async (req, res) => {
                     hora_fim,
                     responsavel,
                     setor,
+                    marcado_por,
                     empresa,
                     motivo,
                     status
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'AGENDADA')
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'AGENDADA')
             `,
             [
                 dados.data,
@@ -356,6 +367,7 @@ const criarReserva = async (req, res) => {
                 dados.hora_fim,
                 dados.responsavel,
                 dados.setor,
+                dados.marcado_por,
                 dados.empresa,
                 dados.motivo
             ]
@@ -449,6 +461,7 @@ const aplicarPrioridade = async (req, res) => {
             dados.hora_fim,
             dados.responsavel,
             dados.setor,
+            dados.marcado_por,
             dados.motivo
         ];
 
@@ -462,6 +475,7 @@ const aplicarPrioridade = async (req, res) => {
                         hora_fim = ?,
                         responsavel = ?,
                         setor = ?,
+                        marcado_por = ?,
                         empresa = 'GREEN',
                         motivo = ?,
                         status = 'AGENDADA'
@@ -482,11 +496,12 @@ const aplicarPrioridade = async (req, res) => {
                     hora_fim,
                     responsavel,
                     setor,
+                    marcado_por,
                     empresa,
                     motivo,
                     status
                 )
-                VALUES (?, ?, ?, ?, ?, 'GREEN', ?, 'AGENDADA')
+                VALUES (?, ?, ?, ?, ?, ?, 'GREEN', ?, 'AGENDADA')
             `,
             valores
         );
@@ -550,6 +565,7 @@ const editarReserva = async (req, res) => {
                     hora_fim = ?,
                     responsavel = ?,
                     setor = ?,
+                    marcado_por = ?,
                     empresa = ?,
                     motivo = ?
                 WHERE id = ?
@@ -560,6 +576,7 @@ const editarReserva = async (req, res) => {
                 dados.hora_fim,
                 dados.responsavel,
                 dados.setor,
+                dados.marcado_por,
                 dados.empresa,
                 dados.motivo,
                 id

@@ -101,6 +101,7 @@ export default function Historico({ onOpenMobileMenu }) {
               <p className="gp-reservas-card-title">{r.motivo || r.responsavel}</p>
               <p className="gp-reservas-card-meta">
                 {r.responsavel} · {r.setor}
+                {r.marcado_por && ` · marcado por ${r.marcado_por}`}
               </p>
               <div className="gp-reservas-card-bottom">
                 <EmpresaBadge empresa={r.empresa} size="sm" />
@@ -117,6 +118,7 @@ export default function Historico({ onOpenMobileMenu }) {
                 <th>Horário</th>
                 <th>Responsável</th>
                 <th>Setor</th>
+                <th>Marcado por</th>
                 <th>Empresa</th>
                 <th>Motivo</th>
                 <th>Status</th>
@@ -131,6 +133,7 @@ export default function Historico({ onOpenMobileMenu }) {
                   </td>
                   <td>{r.responsavel}</td>
                   <td>{r.setor}</td>
+                  <td>{r.marcado_por || "—"}</td>
                   <td>
                     <EmpresaBadge empresa={r.empresa} size="sm" />
                   </td>

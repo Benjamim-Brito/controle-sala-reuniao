@@ -88,3 +88,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+.gp-resform-duracoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gp-resform-duracao {
+  border: 1px solid var(--border-strong);
+}
+.gp-resform-duracao.is-active {
+  background: var(--gp-empresa-green-bg);
+  color: var(--accent-strong);
+}
+.gp-field em.gp-field-optional {
+  color: var(--text-muted);
+  font-weight: 400;
+}
