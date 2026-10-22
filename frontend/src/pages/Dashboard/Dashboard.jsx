@@ -41,6 +41,16 @@ function minutesToTime(minutes) {
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
+// 462 → "7h 42min", em vez de horas decimais como "7.7h"
+function formatDuracao(minutos) {
+  const horas = Math.floor(minutos / 60);
+  const resto = minutos % 60;
+
+  if (horas === 0) return `${resto}min`;
+  if (resto === 0) return `${horas}h`;
+  return `${horas}h ${resto}min`;
+}
+
 export default function Dashboard({ onOpenMobileMenu }) {
   const today = todayISO();
   const { settings } = useSettings();
@@ -144,7 +154,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
       0
     );
 
-    return Math.round((livresMin / 60) * 10) / 10;
+    return formatDuracao(livresMin);
   }, [intervalosLivres]);
 
   function togglePanel(panel) {
@@ -242,8 +252,8 @@ export default function Dashboard({ onOpenMobileMenu }) {
         >
           <Hourglass size={18} />
           <div>
-            <strong>{horariosLivres}h</strong>
-            <span>Horários livres</span>
+            <strong>{horariosLivres}</strong>
+            <span>Livres hoje até {formatTime(settings.horaFinal)}</span>
           </div>
           <span className="gp-summary-card-arrow">{renderArrow("livres")}</span>
         </button>
@@ -321,7 +331,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
                 Período configurado: {formatTime(settings.horaInicial)} – {formatTime(settings.horaFinal)}, a partir de agora.
               </p>
             </div>
-            <span>{horariosLivres}h</span>
+            <span>{horariosLivres}</span>
           </div>
 
           {intervalosLivres.length === 0 ? (
@@ -329,15 +339,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
           ) : (
             <div className="gp-free-slots">
               {intervalosLivres.map((intervalo, index) => {
-                const duracaoMin = intervalo.fim - intervalo.inicio;
-                const horas = Math.floor(duracaoMin / 60);
-                const minutos = duracaoMin % 60;
-                const duracao = [
-                  horas > 0 ? `${horas}h` : null,
-                  minutos > 0 ? `${minutos}min` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" ");
+                const duracao = formatDuracao(intervalo.fim - intervalo.inicio);
 
                 return (
                   <div className="gp-free-slot" key={`${intervalo.inicio}-${intervalo.fim}-${index}`}>
