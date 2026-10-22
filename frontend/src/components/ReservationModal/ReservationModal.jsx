@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import { CalendarDays, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, AlertCircle, AlertTriangle, CircleCheck } from "lucide-react";
 import Modal from "../Modal";
 import { toISODate, timeToMinutes } from "../../utils/date";
+import { avaliarHorario, descreverConflito } from "../../utils/disponibilidade";
+import { reservasApi } from "../../services/api";
 import "./ReservationModal.css";
 
 const EMPTY_FORM = {
@@ -79,6 +81,49 @@ export default function ReservationModal({ open, mode = "create", reserva, onClo
       setFormError("");
     }
   }, [open, reserva, mode]);
+
+  // Reservas do dia escolhido, para avisar conflito antes de salvar
+  const [reservasDoDia, setReservasDoDia] = useState([]);
+  const [agora, setAgora] = useState(() => new Date());
+
+  useEffect(() => {
+    if (!open || !/^\d{4}-\d{2}-\d{2}$/.test(form.data)) {
+      setReservasDoDia([]);
+      return;
+    }
+    let ativo = true;
+    reservasApi
+      .listar({ data: form.data })
+      .then((lista) => ativo && setReservasDoDia(Array.isArray(lista) ? lista : []))
+      .catch(() => ativo && setReservasDoDia([]));
+    return () => {
+      ativo = false;
+    };
+  }, [open, form.data]);
+
+  // Atualiza o "agora" enquanto o formulário está aberto (aviso de horário passado)
+  useEffect(() => {
+    if (!open) return;
+    setAgora(new Date());
+    const id = setInterval(() => setAgora(new Date()), 30000);
+    return () => clearInterval(id);
+  }, [open]);
+
+  const original = useMemo(() => toFormState(reserva, mode), [reserva, mode]);
+
+  const situacao = useMemo(
+    () =>
+      avaliarHorario(form, reservasDoDia, {
+        ignorarId: mode === "edit" ? reserva?.id : null,
+        // Na edição de uma reunião em andamento, só avisa se a data/início mudarem
+        checarPassado:
+          mode !== "edit" ||
+          form.data !== original.data ||
+          form.hora_inicio !== original.hora_inicio,
+        agora,
+      }),
+    [form, reservasDoDia, mode, reserva, original, agora]
+  );
 
   function setField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -223,6 +268,32 @@ export default function ReservationModal({ open, mode = "create", reserva, onClo
               <em className="gp-field-optional">Escolha o horário inicial para usar os atalhos.</em>
             )}
           </div>
+
+          {situacao && (
+            <div
+              className={`gp-field-full gp-resform-check gp-resform-check-${situacao.tipo}`}
+              role={situacao.tipo === "ok" ? "status" : "alert"}
+            >
+              {situacao.tipo === "ok" ? (
+                <CircleCheck size={16} />
+              ) : situacao.tipo === "aviso" ? (
+                <AlertTriangle size={16} />
+              ) : (
+                <AlertCircle size={16} />
+              )}
+              <div>
+                <strong>{situacao.titulo}</strong>
+                {situacao.detalhe && <p>{situacao.detalhe}</p>}
+                {situacao.conflitos.length > 0 && (
+                  <ul>
+                    {situacao.conflitos.map((r) => (
+                      <li key={r.id}>{descreverConflito(r)}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
 
           <label className="gp-field gp-field-full">
             <span>Marcado por (colaborador Green)</span>
