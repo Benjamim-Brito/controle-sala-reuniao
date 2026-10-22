@@ -110,10 +110,27 @@
 
 /* ENCERRAR / ESTENDER */
 
-.gp-details-previsto {
-  font-style: normal;
+/* Linha do horário: a etiqueta de estendida/encerrada quebra para baixo se faltar espaço */
+.gp-details-row:has(.gp-ajuste) {
+  flex-wrap: wrap;
 
-  color: var(--text-muted);
+  align-items: center;
+}
+
+
+.gp-details-extend-atalhos {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+
+.gp-details-extend-atalhos .is-active {
+  border-color: var(--accent);
+
+  color: var(--accent-strong);
 }
 
 

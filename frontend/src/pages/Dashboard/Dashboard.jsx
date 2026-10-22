@@ -29,6 +29,7 @@ import {
   endOfMonth,
   addDays,
   isReservationPast,
+  formatDuracao,
 } from "../../utils/date";
 import { STATUS } from "../../utils/status";
 import "./Dashboard.css";
@@ -49,16 +50,6 @@ function minutesToTime(minutes) {
   const hours = Math.floor(normalized / 60);
   const mins = normalized % 60;
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-}
-
-// 462 → "7h 42min", em vez de horas decimais como "7.7h"
-function formatDuracao(minutos) {
-  const horas = Math.floor(minutos / 60);
-  const resto = minutos % 60;
-
-  if (horas === 0) return `${resto}min`;
-  if (resto === 0) return `${horas}h`;
-  return `${horas}h ${resto}min`;
 }
 
 // Abas da lista de próximas reservas

@@ -7,6 +7,7 @@ import ReservationModal from "../../components/ReservationModal/ReservationModal
 import ConflictModal from "../../components/ConflictModal/ConflictModal";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import ReservationDetailsModal from "../../components/ReservationDetailsModal/ReservationDetailsModal";
+import AjusteHorario from "../../components/AjusteHorario/AjusteHorario";
 import { useReservas } from "../../hooks/useReservas";
 import { useReservationFlow } from "../../hooks/useReservationFlow";
 import { useIsMobile } from "../../hooks/useMediaQuery";
@@ -174,6 +175,7 @@ export default function Reservas({ onOpenMobileMenu }) {
                 {r.responsavel} · {r.setor}
                 {r.marcado_por && ` · marcado por ${r.marcado_por}`}
               </p>
+              <AjusteHorario reserva={r} />
               <div className="gp-reservas-card-bottom">
                 <EmpresaBadge empresa={r.empresa} size="sm" />
                 <div className="gp-reservas-card-actions">
@@ -220,7 +222,10 @@ export default function Reservas({ onOpenMobileMenu }) {
                 <tr key={r.id}>
                   <td>{formatDateBR(r.data)}</td>
                   <td>
-                    {formatTime(r.hora_inicio)}–{formatTime(r.hora_fim)}
+                    <div className="gp-table-horario">
+                      {formatTime(r.hora_inicio)}–{formatTime(r.hora_fim)}
+                      <AjusteHorario reserva={r} mostrarPrevisto={false} />
+                    </div>
                   </td>
                   <td>{r.responsavel}</td>
                   <td>{r.setor}</td>

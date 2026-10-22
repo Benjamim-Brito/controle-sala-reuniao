@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import Modal from "../Modal";
+import AjusteHorario from "../AjusteHorario/AjusteHorario";
 
 import {
   EmpresaBadge,
@@ -135,6 +136,21 @@ export default function ReservationDetailsModal({
     reserva.status === STATUS.AGENDADA &&
     !encerrada;
 
+  // Atalhos para atraso no fim: só os que cabem antes da próxima reserva
+  const fimAtualMin = timeToMinutes(reserva.hora_fim);
+  const limiteMin = limite ? timeToMinutes(limite) : 24 * 60 - 1;
+  const atalhosExtensao = [15, 30, 60].map((minutos) => {
+    const fim = fimAtualMin + minutos;
+    const hh = String(Math.floor(fim / 60)).padStart(2, "0");
+    const mm = String(fim % 60).padStart(2, "0");
+    return {
+      minutos,
+      label: minutos === 60 ? "+1h" : `+${minutos} min`,
+      hora: `${hh}:${mm}`,
+      cabe: limite !== undefined && fim <= limiteMin,
+    };
+  });
+
   async function confirmarExtensao() {
     const sucesso = await onExtend?.(reserva, novoFim);
 
@@ -199,19 +215,9 @@ export default function ReservationDetailsModal({
                 reserva.hora_fim
               )}
 
-              {reserva.hora_fim_prevista &&
-                formatTime(reserva.hora_fim_prevista) !==
-                  formatTime(reserva.hora_fim) && (
-                  <em className="gp-details-previsto">
-                    {" "}
-                    (previsto até{" "}
-                    {formatTime(
-                      reserva.hora_fim_prevista
-                    )}
-                    )
-                  </em>
-                )}
             </span>
+
+            <AjusteHorario reserva={reserva} />
           </div>
 
 
@@ -259,6 +265,27 @@ export default function ReservationDetailsModal({
 
         {estendendo && (
           <div className="gp-details-extend">
+            <div className="gp-details-extend-atalhos">
+              {atalhosExtensao.map((a) => (
+                <button
+                  key={a.minutos}
+                  type="button"
+                  className={`gp-btn gp-btn-secondary gp-btn-sm ${
+                    novoFim === a.hora ? "is-active" : ""
+                  }`}
+                  disabled={!a.cabe || changingStatus}
+                  title={
+                    a.cabe
+                      ? `Terminar às ${a.hora}`
+                      : "Passaria do início da próxima reserva"
+                  }
+                  onClick={() => setNovoFim(a.hora)}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+
             <label className="gp-field">
               <span>Estender até</span>
 
@@ -276,9 +303,11 @@ export default function ReservationDetailsModal({
             <p className="gp-details-extend-hint">
               {limite === undefined
                 ? "Verificando a próxima reserva..."
-                : limite
-                  ? `Próxima reserva às ${limite}. Dá para estender até esse horário.`
-                  : "Nada marcado depois. A extensão está livre."}
+                : limite && timeToMinutes(limite) <= fimAtualMin
+                  ? `A próxima reserva começa às ${limite}, logo no fim desta. Não há horário livre para estender.`
+                  : limite
+                    ? `Próxima reserva às ${limite}. Dá para estender até esse horário.`
+                    : "Nada marcado depois. A extensão está livre."}
             </p>
 
             <div className="gp-details-extend-actions">
