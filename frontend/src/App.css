@@ -2,6 +2,40 @@
   min-height: 100vh;
 }
 
+/*
+  Plano de fundo decorativo, fixo atrás do conteúdo:
+  brilhos verdes nos cantos e uma grade de pontos (lembra um calendário)
+  que some suavemente em direção ao meio da tela.
+*/
+.gp-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 1px 1px, var(--bg-dots) 1px, transparent 1.5px) 0 0 / 22px 22px,
+    radial-gradient(60% 50% at 100% 0%, var(--bg-glow-a), transparent 70%),
+    radial-gradient(50% 45% at 0% 100%, var(--bg-glow-b), transparent 70%);
+  -webkit-mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.55) 45%, #000 100%);
+  mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.55) 45%, #000 100%);
+}
+
+/* Grafismo da marca: bloco de canto "cortado" no canto superior direito */
+.gp-shell::after {
+  content: "";
+  position: fixed;
+  top: -140px;
+  right: -140px;
+  width: 440px;
+  height: 440px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 38% 38% 38% 8%;
+  background: linear-gradient(225deg, var(--bg-shape), transparent 65%);
+  transform: rotate(-14deg);
+}
+
 .gp-main {
   margin-left: var(--gp-sidebar-w);
   min-height: 100vh;
