@@ -92,7 +92,8 @@ export default function Dashboard({ onOpenMobileMenu }) {
   const standByCount = standByReservas.length;
 
   const intervalosLivres = useMemo(() => {
-    const inicioExpediente = timeToMinutes(settings.horaInicial);
+    // O período que já passou não conta como horário livre
+    const inicioExpediente = Math.max(timeToMinutes(settings.horaInicial), nowMinutes);
     const fimExpediente = timeToMinutes(settings.horaFinal);
 
     if (fimExpediente <= inicioExpediente) return [];
@@ -133,7 +134,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
     }
 
     return livres;
-  }, [ativas, settings]);
+  }, [ativas, settings, nowMinutes]);
 
   const horariosLivres = useMemo(() => {
     const livresMin = intervalosLivres.reduce(
@@ -315,7 +316,7 @@ export default function Dashboard({ onOpenMobileMenu }) {
             <div>
               <h3>Horários livres</h3>
               <p>
-                Período configurado: {formatTime(settings.horaInicial)} – {formatTime(settings.horaFinal)}.
+                Período configurado: {formatTime(settings.horaInicial)} – {formatTime(settings.horaFinal)}, a partir de agora.
               </p>
             </div>
             <span>{horariosLivres}h</span>

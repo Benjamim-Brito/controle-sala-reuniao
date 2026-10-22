@@ -181,7 +181,12 @@ export function useReservationFlow({
             tipo: err.codigo,
             mensagem: err.message,
             reservas: err.reservas,
-            payload
+            payload,
+            // Na edição, a prioridade deve atualizar a reserva original
+            reservaId:
+              formState.mode === "edit"
+                ? formState.reserva?.id ?? null
+                : null
           });
 
           return {
@@ -229,9 +234,10 @@ export function useReservationFlow({
           ...prioridadePayload
         } = conflict.payload;
 
-        await reservasApi.aplicarPrioridade(
-          prioridadePayload
-        );
+        await reservasApi.aplicarPrioridade({
+          ...prioridadePayload,
+          id: conflict.reservaId ?? undefined
+        });
 
         toast.success(
           "Prioridade aplicada. Reserva confirmada para a Green."
