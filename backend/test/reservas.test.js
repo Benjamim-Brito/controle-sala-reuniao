@@ -6,7 +6,7 @@
 
     Executar: npm test (com o MySQL rodando e o .env configurado)
 */
-require("dotenv").config();
+require("dotenv").config({ override: true });
 
 process.env.DB_NAME =
     process.env.DB_NAME_TEST || "controle_sala_reuniao_test";
