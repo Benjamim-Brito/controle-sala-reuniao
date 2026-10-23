@@ -112,7 +112,6 @@ export function isTodayISO(isoDate) {
   return isoDate === todayISO();
 }
 
-/** Retorna true quando o horário final da reserva já passou no horário local do navegador. */
 export function isReservationPast(data, horaFim, now = new Date()) {
   if (!data || !horaFim) return false;
 

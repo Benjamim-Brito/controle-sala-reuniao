@@ -82,7 +82,6 @@ export default function ReservationModal({ open, mode = "create", reserva, onClo
     }
   }, [open, reserva, mode]);
 
-  // Reservas do dia escolhido, para avisar conflito antes de salvar
   const [reservasDoDia, setReservasDoDia] = useState([]);
   const [agora, setAgora] = useState(() => new Date());
 

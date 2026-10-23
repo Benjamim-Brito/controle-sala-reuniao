@@ -119,11 +119,6 @@ beforeEach(async () => {
     await db.query("TRUNCATE TABLE reservas");
 });
 
-
-// ======================================================
-// CRIAÇÃO
-// ======================================================
-
 test("cria reserva em horário livre", async () => {
     const r = await criar(FUTURO, "09:00", "10:00", "GREEN");
 
@@ -229,11 +224,6 @@ test("pedidos simultâneos no mesmo horário criam só uma reserva", async () =>
     assert.equal(respostas.filter(r => r.status === 201).length, 1);
 });
 
-
-// ======================================================
-// PRIORIDADE
-// ======================================================
-
 test("prioridade na criação: MV vira CONFLITO e GREEN fica AGENDADA", async () => {
     const mv = await criar(FUTURO, "09:00", "10:00", "MV");
 
@@ -293,11 +283,6 @@ test("prioridades simultâneas criam só uma reserva GREEN", async () => {
     );
 });
 
-
-// ======================================================
-// EDIÇÃO E CANCELAMENTO
-// ======================================================
-
 test("reserva cancelada não pode ser editada nem reativada", async () => {
     const r = await criar(FUTURO, "18:00", "19:00", "MV");
 
@@ -342,11 +327,6 @@ test("reserva encerrada não pode ser cancelada, editada nem pausada", async () 
         409
     );
 });
-
-
-// ======================================================
-// PAUSAR E RETOMAR
-// ======================================================
 
 test("retomar reunião futura com horário ocupado continua em STAND_BY", async () => {
     const r = await criar(FUTURO, "20:00", "21:00", "GREEN");
@@ -393,11 +373,6 @@ test(
         assert.equal(await status(result.insertId), "STAND_BY");
     }
 );
-
-
-// ======================================================
-// PRAZO DE 24H DA PRIORIDADE
-// ======================================================
 
 // Data e hora (HH:MM) de daqui a N horas, pelo relógio do banco
 const daquiA = async (horas) => {
@@ -454,11 +429,6 @@ test("GREEN pode tomar reserva que começa em mais de 24h", async (t) => {
 
     assert.equal(green.body.erro, "PRIORIDADE_DISPONIVEL");
 });
-
-
-// ======================================================
-// ENCERRAR ANTES E ESTENDER
-// ======================================================
 
 const reservaEmAndamento = async (inicio, fim) => {
     const [result] = await db.query(

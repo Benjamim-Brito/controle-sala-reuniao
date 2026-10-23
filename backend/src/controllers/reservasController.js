@@ -15,11 +15,6 @@ class ErroRegra extends Error {
     }
 }
 
-
-// ======================================================
-// FUNÇÕES AUXILIARES
-// ======================================================
-
 const REGEX_DATA = /^\d{4}-\d{2}-\d{2}$/;
 const REGEX_HORA = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -284,11 +279,6 @@ const validarEdicao = (reservaAtual, dados, agora) => {
     }
 };
 
-
-// ======================================================
-// LISTAR RESERVAS
-// ======================================================
-
 const listarReservas = async (req, res) => {
     const { data, data_inicio, data_fim, status, empresa } = req.query;
 
@@ -347,11 +337,6 @@ const listarReservas = async (req, res) => {
     res.json(results);
 };
 
-
-// ======================================================
-// BUSCAR RESERVA POR ID
-// ======================================================
-
 const buscarReservaPorId = async (req, res) => {
     const { id } = req.params;
 
@@ -368,11 +353,6 @@ const buscarReservaPorId = async (req, res) => {
 
     res.json(results[0]);
 };
-
-
-// ======================================================
-// CRIAR RESERVA
-// ======================================================
 
 const criarReserva = async (req, res) => {
     const dados = lerDadosReserva(req.body);
@@ -437,11 +417,6 @@ const criarReserva = async (req, res) => {
         status: "AGENDADA"
     });
 };
-
-
-// ======================================================
-// APLICAR PRIORIDADE GREEN
-// ======================================================
 
 /*
     Sem "id": cria uma nova reserva GREEN.
@@ -579,11 +554,6 @@ const aplicarPrioridade = async (req, res) => {
     });
 };
 
-
-// ======================================================
-// EDITAR RESERVA
-// ======================================================
-
 const editarReserva = async (req, res) => {
     const { id } = req.params;
 
@@ -653,11 +623,6 @@ const editarReserva = async (req, res) => {
     });
 };
 
-
-// ======================================================
-// PAUSAR / STAND BY
-// ======================================================
-
 const pausarReserva = async (req, res) => {
     const { id } = req.params;
 
@@ -690,18 +655,12 @@ const pausarReserva = async (req, res) => {
     });
 };
 
-
-// ======================================================
-// RETOMAR
-// ======================================================
-
 const retomarReserva = async (req, res) => {
     const { id } = req.params;
 
     await comTransacao(async (conexao) => {
         const reserva = await buscarReservaParaAlterar(conexao, id);
 
-        // Somente reservas em STAND_BY podem ser retomadas
         if (reserva.status !== "STAND_BY") {
             throw new ErroRegra(409, {
                 erro: "RETOMADA_NAO_PERMITIDA",
@@ -770,11 +729,6 @@ const retomarReserva = async (req, res) => {
     });
 };
 
-
-// ======================================================
-// ENCERRAR ANTES DO HORÁRIO
-// ======================================================
-
 /*
     A reunião acabou antes do previsto: o fim passa a ser o
     horário atual e o restante do intervalo fica livre para
@@ -821,11 +775,6 @@ const encerrarReserva = async (req, res) => {
         hora_fim: horaFim
     });
 };
-
-
-// ======================================================
-// ESTENDER HORÁRIO
-// ======================================================
 
 /*
     A reunião precisa de mais tempo: o novo fim pode ir, no
@@ -904,11 +853,6 @@ const estenderReserva = async (req, res) => {
     });
 };
 
-
-// ======================================================
-// CANCELAR
-// ======================================================
-
 const cancelarReserva = async (req, res) => {
     const { id } = req.params;
 
@@ -953,7 +897,6 @@ const cancelarReserva = async (req, res) => {
         mensagem: "Reserva cancelada com sucesso"
     });
 };
-
 
 module.exports = {
     listarReservas,

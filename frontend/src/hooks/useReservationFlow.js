@@ -49,7 +49,6 @@ export function useReservationFlow({
     setChangingStatus
   ] = useState(false);
 
-
   const openCreate = useCallback(
     (prefill = null) => {
       setFormState({
@@ -60,7 +59,6 @@ export function useReservationFlow({
     },
     []
   );
-
 
   const openEdit = useCallback(
     (reserva) => {
@@ -73,7 +71,6 @@ export function useReservationFlow({
     []
   );
 
-
   const closeForm = useCallback(() => {
     if (submitting) return;
 
@@ -83,13 +80,11 @@ export function useReservationFlow({
     }));
   }, [submitting]);
 
-
   const closeConflict =
     useCallback(
       () => setConflict(null),
       []
     );
-
 
   const openCancelConfirm =
     useCallback(
@@ -98,18 +93,12 @@ export function useReservationFlow({
       []
     );
 
-
   const closeCancelConfirm =
     useCallback(() => {
       if (cancelling) return;
 
       setCancelTarget(null);
     }, [cancelling]);
-
-
-  // ====================================================
-  // CRIAR / EDITAR
-  // ====================================================
 
   const submitForm = useCallback(
     async (payload) => {
@@ -217,11 +206,6 @@ export function useReservationFlow({
     ]
   );
 
-
-  // ====================================================
-  // PRIORIDADE GREEN
-  // ====================================================
-
   const usePriority =
     useCallback(async () => {
       if (!conflict?.payload) return;
@@ -262,11 +246,6 @@ export function useReservationFlow({
       toast
     ]);
 
-
-  // ====================================================
-  // CANCELAMENTO
-  // ====================================================
-
   const confirmCancel =
     useCallback(async () => {
       if (!cancelTarget) return;
@@ -300,11 +279,6 @@ export function useReservationFlow({
       onChanged,
       toast
     ]);
-
-
-  // ====================================================
-  // STAND BY
-  // ====================================================
 
   const pauseReservation =
     useCallback(
@@ -347,11 +321,6 @@ export function useReservationFlow({
       ]
     );
 
-
-  // ====================================================
-  // RETOMAR
-  // ====================================================
-
   const resumeReservation =
     useCallback(
       async (reserva) => {
@@ -389,11 +358,6 @@ export function useReservationFlow({
         toast
       ]
     );
-
-
-  // ====================================================
-  // ENCERRAR ANTES DO HORÁRIO
-  // ====================================================
 
   const endReservation =
     useCallback(
@@ -434,11 +398,6 @@ export function useReservationFlow({
       ]
     );
 
-
-  // ====================================================
-  // ESTENDER HORÁRIO
-  // ====================================================
-
   const extendReservation =
     useCallback(
       async (reserva, horaFim) => {
@@ -477,7 +436,6 @@ export function useReservationFlow({
         toast
       ]
     );
-
 
   return {
     formState,

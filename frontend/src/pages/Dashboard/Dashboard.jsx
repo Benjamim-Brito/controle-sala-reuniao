@@ -52,7 +52,6 @@ function minutesToTime(minutes) {
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
-// Abas da lista de próximas reservas
 const PERIODOS = [
   { id: "dia", label: "Hoje", vazio: "Nenhuma reserva para hoje" },
   { id: "semana", label: "Esta semana", vazio: "Nenhuma reserva no resto da semana" },
