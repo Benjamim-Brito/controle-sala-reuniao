@@ -12,7 +12,35 @@ Sistema interno da Green Paperless para reservar a sala de reunião. Substitui a
 
 O frontend nunca acessa o banco direto: tudo passa pela API.
 
-## Como rodar
+## Rodar com Docker
+
+O Docker roda o banco, o backend e o frontend em containers, sem instalar Node.js nem MySQL na máquina. Pré-requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (no Windows, com WSL 2: `wsl --install` como administrador e reiniciar).
+
+```bash
+cp .env.example .env    # opcional: troque DB_PASSWORD e, se tiver, os IDs do Entra
+docker compose up -d --build
+```
+
+| Container | Endereço |
+| --- | --- |
+| `frontend` (nginx com o build do React) | http://localhost:5173 |
+| `backend` (API) | http://localhost:3000 |
+| `db` (MySQL 8) | localhost:3307 (usuário `root`, senha `DB_PASSWORD`) |
+
+Na primeira subida o MySQL cria a tabela com `backend/database.sql`. Os dados ficam no volume `dados_mysql` e continuam lá depois de `docker compose down`; só `docker compose down -v` apaga o banco.
+
+Comandos do dia a dia:
+
+```bash
+docker compose ps                 # o que está rodando
+docker compose logs -f backend    # logs da API
+docker compose up -d --build      # depois de mudar o código ou o .env
+docker compose down               # para tudo (mantém os dados)
+```
+
+Os `.env` de `backend/` e `frontend/` não são usados pelo Docker: ele lê só o `.env` da raiz.
+
+## Como rodar sem Docker
 
 Pré-requisitos: Node.js 20 ou mais recente e MySQL 8.
 
