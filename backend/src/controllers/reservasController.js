@@ -36,7 +36,11 @@ const dataValida = (data) => {
 // "14:00:00" ou "14:00" -> "14:00"
 const hhmm = (hora) => String(hora).slice(0, 5);
 
-const lerDadosReserva = (body = {}) => ({
+/*
+    "marcado_por" é sempre o usuário logado (vem do token),
+    nunca o que o frontend mandar no corpo.
+*/
+const lerDadosReserva = (body = {}, usuario) => ({
     data: body.data,
     hora_inicio:
         typeof body.hora_inicio === "string"
@@ -54,10 +58,7 @@ const lerDadosReserva = (body = {}) => ({
         typeof body.setor === "string"
             ? body.setor.trim()
             : body.setor,
-    marcado_por:
-        typeof body.marcado_por === "string"
-            ? body.marcado_por.trim()
-            : body.marcado_por,
+    marcado_por: usuario?.nome,
     empresa: body.empresa,
     motivo:
         typeof body.motivo === "string" && body.motivo.trim()
@@ -85,9 +86,9 @@ const validarDadosReserva = ({
         return "Preencha todos os campos obrigatórios";
     }
 
-    // Só colaboradores da GREEN marcam reuniões
+    // Garantido pelo middleware de autenticação
     if (!marcado_por) {
-        return "Informe o colaborador da GREEN que está marcando a reunião";
+        return "Não foi possível identificar o usuário logado";
     }
 
     if (!dataValida(data)) {
@@ -355,7 +356,7 @@ const buscarReservaPorId = async (req, res) => {
 };
 
 const criarReserva = async (req, res) => {
-    const dados = lerDadosReserva(req.body);
+    const dados = lerDadosReserva(req.body, req.usuario);
 
     const erroValidacao = validarDadosReserva(dados);
 
@@ -429,10 +430,13 @@ const criarReserva = async (req, res) => {
 const aplicarPrioridade = async (req, res) => {
     const id = req.body?.id ?? null;
 
-    const dados = lerDadosReserva({
-        ...req.body,
-        empresa: "GREEN"
-    });
+    const dados = lerDadosReserva(
+        {
+            ...req.body,
+            empresa: "GREEN"
+        },
+        req.usuario
+    );
 
     const erroValidacao = validarDadosReserva(dados);
 
@@ -557,7 +561,7 @@ const aplicarPrioridade = async (req, res) => {
 const editarReserva = async (req, res) => {
     const { id } = req.params;
 
-    const dados = lerDadosReserva(req.body);
+    const dados = lerDadosReserva(req.body, req.usuario);
 
     const erroValidacao = validarDadosReserva(dados);
 

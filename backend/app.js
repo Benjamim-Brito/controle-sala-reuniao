@@ -2,13 +2,14 @@ const express = require("express");
 const cors = require("cors");
 
 const reservasRoutes = require("./src/routes/reservasRoutes");
+const autenticar = require("./src/middleware/autenticacao");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/reservas", reservasRoutes);
+app.use("/reservas", autenticar, reservasRoutes);
 
 // Erros não tratados nas rotas sempre voltam em JSON
 app.use((err, req, res, next) => {
