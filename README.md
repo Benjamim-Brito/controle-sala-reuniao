@@ -54,6 +54,22 @@ Para outras pessoas da mesma rede acessarem, rode `npm run dev -- --host` e troq
 
 > Os arquivos `.env` têm senhas e ficam só na sua máquina. Nunca faça commit deles.
 
+## Login com Entra ID
+
+O sistema inteiro exige login com a conta Microsoft da empresa. O nome do usuário logado é gravado automaticamente como "marcado por" em cada reserva.
+
+**Modo prévia (sem Azure):** com `VITE_ENTRA_TENANT_ID`/`VITE_ENTRA_CLIENT_ID` (frontend) e `ENTRA_TENANT_ID`/`ENTRA_CLIENT_ID` (backend) vazios, o botão "Entrar com Microsoft" mostra usuários de teste e o login é simulado. Uma faixa "Modo prévia – login simulado" aparece na tela e o backend avisa no console. Serve só para testar; não usar em produção.
+
+**Login real:** o administrador do Azure precisa:
+
+1. Criar um **App registration** em Microsoft Entra ID, tipo **single tenant** (só contas da organização).
+2. Em **Authentication**, adicionar a plataforma **Single-page application (SPA)** com o redirect `http://localhost:5173` (e o endereço de produção, quando houver).
+3. Em **Expose an API**, definir o Application ID URI `api://<client-id>` e criar o escopo `access_as_user`.
+4. No **Manifest**, definir `"requestedAccessTokenVersion": 2` (no manifest antigo: `"accessTokenAcceptedVersion": 2`) (a API confere o emissor v2 do tenant).
+5. Passar o **Directory (tenant) ID** e o **Application (client) ID** para os `.env` do frontend e do backend.
+
+Fora de `localhost`, o app precisa rodar em **HTTPS** (exigência da Microsoft para o redirect).
+
 ## Testes
 
 ```bash
@@ -95,7 +111,7 @@ Operações que mexem em mais de uma reserva usam transação MySQL e uma trava 
 
 ## API
 
-Base: `http://localhost:3000/reservas`
+Base: `http://localhost:3000/reservas`. Todas as rotas exigem `Authorization: Bearer <token>`; sem token a API responde `401`.
 
 | Método | Rota | Ação |
 | --- | --- | --- |
@@ -129,6 +145,6 @@ frontend/
 
 ## Próximos passos
 
-- Login e permissões: cada pessoa só edita, pausa e cancela as próprias reservas.
+- Permissões: cada pessoa só edita, pausa e cancela as próprias reservas.
 - Preparação para produção: hospedagem, HTTPS, backups e logs.
 - Integração com Outlook/Teams (Microsoft Graph).
