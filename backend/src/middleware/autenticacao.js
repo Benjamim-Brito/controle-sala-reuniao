@@ -105,3 +105,4 @@ const autenticar = async (req, res, next) => {
 
 module.exports = autenticar;
 module.exports.modoPrevia = modoPrevia;
+module.exports.configEntra = configEntra;

@@ -1,6 +1,7 @@
-# Sobe o sistema inteiro com um comando: docker compose up -d --build
+# Teste local: docker compose up -d --build
 # Os valores vêm do arquivo .env da raiz (copie de .env.example).
 # Sem ele, tudo funciona com os padrões abaixo, em modo prévia.
+# No servidor da empresa use o docker-compose.prod.yml (veja o README).
 
 services:
   db:
@@ -47,7 +48,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+        VITE_API_URL: ${VITE_API_URL:-/api}
         VITE_ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:-}
         VITE_ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:-}
     restart: unless-stopped
