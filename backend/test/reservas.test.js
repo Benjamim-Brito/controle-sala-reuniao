@@ -213,10 +213,65 @@ test("marcado_por é o usuário logado, ignorando o corpo", async () => {
     );
 
     assert.equal(edicao.status, 200);
+
+    // A edição não apaga quem marcou a reunião
     assert.equal(
         (await api("GET", `/reservas/${r.body.id}`)).body.marcado_por,
+        USUARIO
+    );
+});
+
+test("cancelamento registra quem cancelou e quando", async () => {
+    const r = await criar(FUTURO, "11:00", "12:00", "MV");
+
+    const antes = await api("GET", `/reservas/${r.body.id}`);
+
+    assert.equal(antes.body.cancelado_por, null);
+    assert.equal(antes.body.cancelado_em, null);
+
+    const outroUsuario = `Bearer previa:${encodeURIComponent("Carlos Lima")}`;
+
+    assert.equal(
+        (await api("PATCH", `/reservas/${r.body.id}/cancelar`, null, outroUsuario)).status,
+        200
+    );
+
+    const salva = (await api("GET", `/reservas/${r.body.id}`)).body;
+
+    assert.equal(salva.status, "CANCELADA");
+    assert.equal(salva.marcado_por, USUARIO);
+    assert.equal(salva.cancelado_por, "Carlos Lima");
+    assert.match(salva.cancelado_em, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+
+    // Uma segunda tentativa recusada não troca quem cancelou
+    await api("PATCH", `/reservas/${r.body.id}/cancelar`);
+
+    assert.equal(
+        (await api("GET", `/reservas/${r.body.id}`)).body.cancelado_por,
         "Carlos Lima"
     );
+});
+
+test("prioridade aplicada na edição mantém quem marcou", async () => {
+    const mv = await criar(FUTURO, "14:00", "15:00", "MV");
+    const green = await criar(FUTURO, "15:00", "16:00", "GREEN");
+
+    const outroUsuario = `Bearer previa:${encodeURIComponent("Carlos Lima")}`;
+
+    const r = await api(
+        "POST",
+        "/reservas/prioridade",
+        { ...reserva(FUTURO, "14:00", "15:00"), id: green.body.id },
+        outroUsuario
+    );
+
+    assert.equal(r.status, 200);
+    assert.equal(await status(mv.body.id), "CONFLITO");
+
+    const salva = (await api("GET", `/reservas/${green.body.id}`)).body;
+
+    assert.equal(salva.marcado_por, USUARIO);
+    assert.equal(salva.hora_inicio.slice(0, 5), "14:00");
 });
 
 test("lista reservas de um período com as duas datas inclusivas", async () => {
